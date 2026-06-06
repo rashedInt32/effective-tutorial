@@ -14,7 +14,9 @@ export const metadata: Metadata = {
 const FILE = "backend/httpapi-reference.ts"
 
 /* Illustrative menus — reference enumerations, not a runnable program, so they
-   live inline (the same way the other lessons inline their curl snippets). */
+   live inline (the same way the other lessons inline their curl snippets).
+   Unlike the numbered examples below, these are hand-curated, not lifted from
+   the typechecked source file. */
 const IMPORTS = `import { Effect, Schema, Layer, Context, Redacted } from "effect"
 import {
   HttpApi, HttpApiGroup, HttpApiEndpoint, HttpApiBuilder,
@@ -151,8 +153,10 @@ export default async function Page() {
           (Builder) → <span className="text-cyan">serve</span> ·{" "}
           <span className="text-cyan">call</span> ·{" "}
           <span className="text-cyan">document</span> ·{" "}
-          <span className="text-cyan">test</span>. Every code block below
-          typechecks against <Code>effect@4</Code>.
+          <span className="text-cyan">test</span>. Every numbered example below
+          is lifted straight from a source file that typechecks against{" "}
+          <Code>effect@4</Code>; the reference menus between them are
+          hand-curated.
         </Quote>
       </Reveal>
 
