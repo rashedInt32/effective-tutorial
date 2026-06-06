@@ -11,10 +11,14 @@
     "prepare": "effect-language-service patch"
   },
   "dependencies": {
+    "@effect/platform-bun": "4.0.0-beta.78",
+    "@effect/platform-node": "4.0.0-beta.78",
     "effect": "4.0.0-beta.78",
+    "motion": "^12.40.0",
     "next": "16.2.7",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "shiki": "^4.2.0"
   },
   "devDependencies": {
     "@effect/language-service": "^0.86.2",

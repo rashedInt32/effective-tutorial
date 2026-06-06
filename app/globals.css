@@ -1,26 +1,183 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------ *
+ *  Effect Tutorial — dark "devtools + gradient glow" design system
+ * ------------------------------------------------------------------ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #06070d;
+  --surface: #0c0e18;
+  --foreground: #e7e9f3;
+  --muted: #9aa1bd;
+  --border: rgba(255, 255, 255, 0.08);
+
+  --accent-violet: #8b5cf6;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #22d3ee;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-violet: var(--accent-violet);
+  --color-blue: var(--accent-blue);
+  --color-cyan: var(--accent-cyan);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-gradient: gradient-pan 8s ease infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -28px, 0); }
+}
+
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Ambient gradient glows painted behind everything */
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-glow::before,
+.ambient-glow::after {
+  content: "";
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.35;
+}
+.ambient-glow::before {
+  top: -20vw;
+  left: -10vw;
+  background: radial-gradient(circle, var(--accent-violet), transparent 60%);
+  animation: var(--animate-float);
+}
+.ambient-glow::after {
+  bottom: -25vw;
+  right: -10vw;
+  background: radial-gradient(circle, var(--accent-cyan), transparent 60%);
+  animation: var(--animate-float);
+  animation-delay: -4.5s;
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(
+    100deg,
+    var(--accent-violet),
+    var(--accent-blue),
+    var(--accent-cyan)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-gradient);
+}
+
+/* Glassy card */
+.glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.045),
+    rgba(255, 255, 255, 0.015)
+  );
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  backdrop-filter: blur(12px);
+}
+
+/* Code card with a soft gradient ring + glow */
+.code-card {
+  position: relative;
+  border-radius: 1rem;
+  background: #0a0c16;
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 30px 80px -40px rgba(59, 130, 246, 0.45);
+  overflow: hidden;
+}
+.code-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    130deg,
+    rgba(139, 92, 246, 0.5),
+    rgba(34, 211, 238, 0.18),
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Shiki output: strip its background, keep our card bg, tune spacing */
+.code-card pre.shiki {
+  margin: 0;
+  padding: 1.25rem 1.4rem;
+  background: transparent !important;
+  font-size: 0.86rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+.code-card pre.shiki code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Body copy inside lessons */
+.prose-text {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+.prose-text strong { color: var(--foreground); }
+.prose-text em { color: var(--foreground); font-style: normal; }
+
+/* Window chrome dots */
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 9999px;
 }
