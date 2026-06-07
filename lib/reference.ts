@@ -19,6 +19,12 @@ export const referencePages: readonly ReferencePage[] = [
     ready: true
   },
   {
+    slug: "errors",
+    title: "Fail & recover",
+    desc: "Typed errors vs defects, catching by tag, folding to a value, and retry policies.",
+    ready: true
+  },
+  {
     slug: "option-result",
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
