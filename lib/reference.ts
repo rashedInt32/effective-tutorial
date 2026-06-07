@@ -13,6 +13,12 @@ export type ReferencePage = {
 
 export const referencePages: readonly ReferencePage[] = [
   {
+    slug: "effect",
+    title: "The Effect type",
+    desc: "Build, sequence, transform, and run the description at the heart of everything.",
+    ready: true
+  },
+  {
     slug: "option-result",
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
