@@ -21,3 +21,14 @@ Never guess at Effect patterns - check the guide first.
 
 The Effect source repository is cloned to `~/.local/share/effect-solutions/effect` for reference. Use this to explore APIs, find usage examples, and understand implementation details when the documentation isn't enough.
 <!-- effect-solutions:end -->
+
+## Vendored Effect source — the source of truth (pinned to the installed beta)
+
+The Effect v4 source is vendored as a **git submodule** at `repos/effect`, pinned to the **exact installed version** — `effect@4.0.0-beta.78`, from [`Effect-TS/effect-smol`](https://github.com/Effect-TS/effect-smol) (the repo where v4 beta lives; the public `Effect-TS/effect` is still v3).
+
+Prefer this over the `~/.local/share/effect-solutions/effect` clone above: that clone tracks HEAD and has **drifted ahead** of the installed beta (renamed/removed APIs — e.g. `Either`→`Result`, no `Effect.fork`, no `Data.struct`). The submodule matches `node_modules` exactly.
+
+- Core package source: `repos/effect/packages/effect/src/` (e.g. `Effect.ts`, `Schema.ts`, `Stream.ts`, `unstable/http/`, `unstable/httpapi/`). Grep here for real signatures, JSDoc, and implementations.
+- **Read-only reference** — never edit it, never import from it. It is excluded from typecheck, lint, Next's build, and editor search.
+- After cloning this repo, run `git submodule update --init repos/effect` to populate it.
+- To bump when the installed beta changes: `cd repos/effect && git fetch --tags && git checkout effect@4.0.0-beta.<N> && cd ../.. && git add repos/effect && git commit`.

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored Effect source (read-only reference, pinned to the installed beta).
+    "repos/**",
   ]),
 ]);
 
