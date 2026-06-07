@@ -59,6 +59,12 @@ export const referencePages: readonly ReferencePage[] = [
     title: "Ref & Queue",
     desc: "Fiber-safe state and messaging — an atomic cell and an async channel.",
     ready: true
+  },
+  {
+    slug: "scope",
+    title: "Scope & resources",
+    desc: "Acquire/release with guaranteed cleanup, and resourceful services via Layer.",
+    ready: true
   }
 ]
 
