@@ -37,6 +37,12 @@ export const referencePages: readonly ReferencePage[] = [
     ready: true
   },
   {
+    slug: "stream",
+    title: "Stream",
+    desc: "A lazy, resource-safe sequence of many values — build, transform, and run it.",
+    ready: true
+  },
+  {
     slug: "option-result",
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
