@@ -55,7 +55,7 @@ export default async function Lesson() {
       title: "Encoded through a Schema",
       ...snip["body-schema"],
       filename: "responses.ts",
-      desc: "Validate and transform before serializing — Date → ISO string, branded types, redacted fields. Returns a reusable encoder. This is the bridge into Lesson 03. Adjacent: schemaJsonUnsafe."
+      desc: "Validate and transform before serializing — Date → ISO string, branded types, redacted fields. Returns a reusable encoder you can apply to many values. This is the bridge into Lesson 03."
     }
   ]
 
