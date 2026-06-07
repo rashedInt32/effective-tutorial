@@ -71,6 +71,12 @@ export const referencePages: readonly ReferencePage[] = [
     title: "Config",
     desc: "Typed, composable configuration — declared, nested, and read as an Effect.",
     ready: true
+  },
+  {
+    slug: "schedule",
+    title: "Schedule",
+    desc: "Reusable repetition policies for retry and repeat — backoff, jitter, caps.",
+    ready: true
   }
 ]
 
