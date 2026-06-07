@@ -65,6 +65,12 @@ export const referencePages: readonly ReferencePage[] = [
     title: "Scope & resources",
     desc: "Acquire/release with guaranteed cleanup, and resourceful services via Layer.",
     ready: true
+  },
+  {
+    slug: "config",
+    title: "Config",
+    desc: "Typed, composable configuration — declared, nested, and read as an Effect.",
+    ready: true
   }
 ]
 
