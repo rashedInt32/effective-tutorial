@@ -31,6 +31,12 @@ export const referencePages: readonly ReferencePage[] = [
     ready: true
   },
   {
+    slug: "concurrency",
+    title: "Concurrency",
+    desc: "Run effects together, race, time out, and fork fibers — structured by default.",
+    ready: true
+  },
+  {
     slug: "option-result",
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
