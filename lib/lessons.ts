@@ -34,7 +34,7 @@ export const lessons: readonly Lesson[] = [
     n: "03",
     title: "Schemas: payload, response, errors",
     desc: "Validate input and model failures as data.",
-    ready: false
+    ready: true
   }
 ]
 
