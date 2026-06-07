@@ -1,36 +1,6 @@
 import Link from "next/link"
 import { Reveal } from "@/app/_components/Reveal"
-
-const lessons = [
-  {
-    href: "/backend/01-create-and-run-server",
-    n: "01",
-    title: "Create & run a server",
-    desc: "Your first HTTP server, the handler three ways, Node ⇄ Bun.",
-    ready: true
-  },
-  {
-    href: "/backend/02-endpoints-and-responses",
-    n: "02",
-    title: "Endpoints & responses",
-    desc: "JSON, status codes, headers, reading the request body.",
-    ready: true
-  },
-  {
-    href: "#",
-    n: "03",
-    title: "Schemas: payload, response, errors",
-    desc: "Validate input and model failures as data.",
-    ready: false
-  },
-  {
-    href: "/backend/httpapi-reference",
-    n: "★",
-    title: "HttpApi — the whole map",
-    desc: "One contract → server, typed client, URL builder, OpenAPI docs, tests.",
-    ready: true
-  }
-]
+import { indexCards, lessonHref, type Lesson } from "@/lib/lessons"
 
 export default function Home() {
   return (
@@ -50,9 +20,9 @@ export default function Home() {
       </Reveal>
 
       <div className="mt-16 space-y-4">
-        {lessons.map((l, i) => (
-          <Reveal key={l.n} delay={i * 0.06}>
-            <LessonRow {...l} />
+        {indexCards.map((l, i) => (
+          <Reveal key={l.slug} delay={i * 0.06}>
+            <LessonRow lesson={l} />
           </Reveal>
         ))}
       </div>
@@ -60,19 +30,7 @@ export default function Home() {
   )
 }
 
-function LessonRow({
-  href,
-  n,
-  title,
-  desc,
-  ready
-}: {
-  href: string
-  n: string
-  title: string
-  desc: string
-  ready: boolean
-}) {
+function LessonRow({ lesson: { slug, n, title, desc, ready } }: { lesson: Lesson }) {
   const inner = (
     <div className="glass group flex items-center gap-5 p-5 transition-transform duration-300 hover:-translate-y-0.5">
       <span className="text-2xl font-mono font-bold text-gradient w-12 shrink-0">{n}</span>
@@ -94,7 +52,7 @@ function LessonRow({
   )
 
   return ready ? (
-    <Link href={href}>{inner}</Link>
+    <Link href={lessonHref(slug)}>{inner}</Link>
   ) : (
     <div className="opacity-55 cursor-not-allowed">{inner}</div>
   )
