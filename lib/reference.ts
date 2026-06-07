@@ -47,6 +47,12 @@ export const referencePages: readonly ReferencePage[] = [
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
     ready: true
+  },
+  {
+    slug: "data-match",
+    title: "Data & Match",
+    desc: "Value equality, tagged unions, and exhaustive pattern matching.",
+    ready: true
   }
 ]
 
