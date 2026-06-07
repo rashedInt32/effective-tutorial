@@ -25,6 +25,12 @@ export const referencePages: readonly ReferencePage[] = [
     ready: true
   },
   {
+    slug: "layers",
+    title: "Layers & Context",
+    desc: "Typed dependency injection — define a service, build it with a Layer, provide it.",
+    ready: true
+  },
+  {
     slug: "option-result",
     title: "Option & Either (Result)",
     desc: "Values that might be absent or failed — and the combinators they share.",
