@@ -1,8 +1,9 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { highlight, loadRegions } from "@/lib/code"
+import { highlightAll, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
 import { Reveal } from "@/app/_components/Reveal"
+import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
 export const metadata: Metadata = {
@@ -70,83 +71,53 @@ group.annotate(OpenApi.Exclude, true)              // omit from the spec
 api.annotate(HttpApi.AdditionalSchemas, [Named])   // extra component schemas`
 
 export default async function Page() {
-  const r = loadRegions(FILE)
-
-  const [
-    importsHtml,
-    modelHtml,
-    endpointBasicHtml,
-    endpointFullHtml,
-    methodsHtml,
-    encodingsHtml,
-    errorsHtml,
-    groupHtml,
-    groupTopHtml,
-    apiHtml,
-    handlersHtml,
-    serveHtml,
-    middlewareHtml,
-    attachHtml,
-    securityHtml,
-    schemesHtml,
-    clientHtml,
-    responseModeHtml,
-    urlbuilderHtml,
-    openapiHtml,
-    docsHtml,
-    testHtml,
-    capstoneHtml,
-    capstoneConsumeHtml
-  ] = await Promise.all([
-    highlight(IMPORTS, "ts"),
-    highlight(r.model, "ts"),
-    highlight(r["endpoint-basic"], "ts"),
-    highlight(r["endpoint-full"], "ts"),
-    highlight(r.methods, "ts"),
-    highlight(ENCODINGS, "ts"),
-    highlight(ERRORS, "ts"),
-    highlight(r.group, "ts"),
-    highlight(r["group-toplevel"], "ts"),
-    highlight(r.api, "ts"),
-    highlight(r.handlers, "ts"),
-    highlight(r.serve, "ts"),
-    highlight(r.middleware, "ts"),
-    highlight(ATTACH, "ts"),
-    highlight(r.security, "ts"),
-    highlight(SCHEMES, "ts"),
-    highlight(r.client, "ts"),
-    highlight(RESPONSE_MODE, "ts"),
-    highlight(r.urlbuilder, "ts"),
-    highlight(OPENAPI, "ts"),
-    highlight(r.docs, "ts"),
-    highlight(r.test, "ts"),
-    highlight(r.capstone, "ts"),
-    highlight(r["capstone-consume"], "ts")
+  // File-backed snippets — every one is lifted from a region that typechecks.
+  const snip = await highlightRegions(FILE, [
+    "model",
+    "endpoint-basic",
+    "endpoint-full",
+    "methods",
+    "group",
+    "group-toplevel",
+    "api",
+    "handlers",
+    "serve",
+    "middleware",
+    "security",
+    "client",
+    "urlbuilder",
+    "docs",
+    "test",
+    "capstone",
+    "capstone-consume"
   ])
+  // Hand-curated reference menus — shown code === copied code.
+  const menu = await highlightAll({
+    imports: { code: IMPORTS },
+    encodings: { code: ENCODINGS },
+    errors: { code: ERRORS },
+    attach: { code: ATTACH },
+    schemes: { code: SCHEMES },
+    responseMode: { code: RESPONSE_MODE },
+    openapi: { code: OPENAPI }
+  })
 
   return (
     <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
       {/* Hero */}
-      <Reveal>
-        <Link
-          href="/"
-          className="text-sm font-mono text-muted hover:text-foreground transition-colors"
-        >
-          ← all lessons
-        </Link>
-        <p className="mt-8 text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-          Backend · Reference
-        </p>
-        <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight">
-          HttpApi — <span className="text-gradient">the whole map</span>
-        </h1>
-        <p className="mt-5 text-lg text-muted leading-relaxed">
-          The other lessons wire routes by hand. <Code>httpapi</Code> goes one
-          level up: you <em>declare</em> the contract once, and that single
-          value becomes a server, a typed client, a URL builder, an OpenAPI
-          document, and an in-memory test rig. This page is the entire surface —
-          every option, in the order you&apos;d reach for it.
-        </p>
+      <Hero
+        eyebrow="Backend · Reference"
+        title={<>HttpApi — <span className="text-gradient">the whole map</span></>}
+        intro={
+          <>
+            The other lessons wire routes by hand. <Code>httpapi</Code> goes one
+            level up: you <em>declare</em> the contract once, and that single
+            value becomes a server, a typed client, a URL builder, an OpenAPI
+            document, and an in-memory test rig. This page is the entire surface —
+            every option, in the order you&apos;d reach for it.
+          </>
+        }
+      >
         <Quote label="The shape of everything">
           <strong className="text-foreground">Declare</strong> (Endpoint → Group
           → Api) → <strong className="text-foreground">implement</strong>{" "}
@@ -158,7 +129,7 @@ export default async function Page() {
           <Code>effect@4</Code>; the reference menus between them are
           hand-curated.
         </Quote>
-      </Reveal>
+      </Hero>
 
       {/* Imports */}
       <Section n="00" title="What you import">
@@ -166,12 +137,7 @@ export default async function Page() {
           Two sources only: data types and combinators from <Code>effect</Code>,
           and the API modules from <Code>effect/unstable/httpapi</Code>.
         </p>
-        <CodeFrame
-          html={importsHtml}
-          code={IMPORTS}
-          filename="imports.ts"
-          lang="ts"
-        />
+        <CodeFrame {...menu.imports} filename="imports.ts" lang="ts" />
       </Section>
 
       {/* 01 — model */}
@@ -182,12 +148,7 @@ export default async function Page() {
           <Code>httpApiStatus</Code> picks the response code and lets you list
           it directly as an endpoint <Code>error</Code>.
         </p>
-        <CodeFrame
-          html={modelHtml}
-          code={r.model}
-          filename="model.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.model} filename="model.ts" lang="ts" />
       </Section>
 
       {/* 02 — endpoints */}
@@ -198,35 +159,20 @@ export default async function Page() {
           <Code>params</Code>; <Code>success</Code> is the response;{" "}
           <Code>error</Code> is a declared failure.
         </p>
-        <CodeFrame
-          html={endpointBasicHtml}
-          code={r["endpoint-basic"]}
-          filename="endpoints.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip["endpoint-basic"]} filename="endpoints.ts" lang="ts" />
         <p className="prose-text">
           Fill in as much as the route needs — params, query, headers, payload,
           success, and error are all optional. Plain struct objects work for
           params / query / headers; the body <Code>payload</Code> takes a{" "}
           <Code>Schema</Code>.
         </p>
-        <CodeFrame
-          html={endpointFullHtml}
-          code={r["endpoint-full"]}
-          filename="endpoints.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip["endpoint-full"]} filename="endpoints.ts" lang="ts" />
         <Callout label="Call shape">
           It&apos;s a single call — <Code>get(name, path, options)</Code>, not a
           curried builder. Body methods JSON-encode <Code>payload</Code>;
           no-body methods encode it as query params instead.
         </Callout>
-        <CodeFrame
-          html={methodsHtml}
-          code={r.methods}
-          filename="endpoints.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.methods} filename="endpoints.ts" lang="ts" />
       </Section>
 
       {/* 03 — schema metadata */}
@@ -236,12 +182,7 @@ export default async function Page() {
           which status, which content type, which body shape. Unset, it defaults
           to JSON.
         </p>
-        <CodeFrame
-          html={encodingsHtml}
-          code={ENCODINGS}
-          filename="HttpApiSchema"
-          lang="ts"
-        />
+        <CodeFrame {...menu.encodings} filename="HttpApiSchema" lang="ts" />
         <Quote label="Defaults worth memorizing">
           Success without a status is <Code>200</Code>; an error without one is{" "}
           <Code>500</Code>; a body without an encoding is{" "}
@@ -257,12 +198,7 @@ export default async function Page() {
           Ready-made tagged errors carrying the right status. Use them as{" "}
           <Code>error</Code> schemas or return them straight from a handler.
         </p>
-        <CodeFrame
-          html={errorsHtml}
-          code={ERRORS}
-          filename="HttpApiError"
-          lang="ts"
-        />
+        <CodeFrame {...menu.errors} filename="HttpApiError" lang="ts" />
         <ModuleNote module="HttpApiError">
           Request decoding failures surface as <Code>HttpApiSchemaError</Code>{" "}
           (responds <Code>400</Code>, with a <Code>kind</Code> of{" "}
@@ -277,12 +213,7 @@ export default async function Page() {
           A group is a domain boundary — a set of endpoints under one name, with
           shared prefix, middleware, and annotations.
         </p>
-        <CodeFrame
-          html={groupHtml}
-          code={r.group}
-          filename="groups.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.group} filename="groups.ts" lang="ts" />
         <Callout label="Order matters">
           <Code>prefix</Code>, <Code>middleware</Code>, and the{" "}
           <Code>annotateEndpoints</Code> helpers only touch endpoints{" "}
@@ -293,12 +224,7 @@ export default async function Page() {
           A <Code>topLevel</Code> group lifts its endpoints onto the
           client/builder root instead of nesting them under the group name.
         </p>
-        <CodeFrame
-          html={groupTopHtml}
-          code={r["group-toplevel"]}
-          filename="groups.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip["group-toplevel"]} filename="groups.ts" lang="ts" />
       </Section>
 
       {/* 06 — api */}
@@ -307,7 +233,7 @@ export default async function Page() {
           <Code>HttpApi.make</Code> collects groups into one contract. This is
           the value every consumer below is built from.
         </p>
-        <CodeFrame html={apiHtml} code={r.api} filename="api.ts" lang="ts" />
+        <CodeFrame {...snip.api} filename="api.ts" lang="ts" />
         <ModuleNote module="HttpApi">
           <Code>addHttpApi</Code> merges another API&apos;s groups,{" "}
           <Code>prefix</Code> / <Code>middleware</Code> apply to everything
@@ -324,12 +250,7 @@ export default async function Page() {
           declared and returns the success value — or an{" "}
           <Code>HttpServerResponse</Code> to bypass encoding.
         </p>
-        <CodeFrame
-          html={handlersHtml}
-          code={r.handlers}
-          filename="handlers.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.handlers} filename="handlers.ts" lang="ts" />
         <Quote label="The compiler holds you to it">
           Leaving any endpoint of the group unimplemented is a{" "}
           <strong className="text-foreground">type error</strong>, not a runtime
@@ -345,12 +266,7 @@ export default async function Page() {
           the router (and can publish the raw OpenAPI JSON). Provide every
           group, then serve it exactly like a hand-written router app.
         </p>
-        <CodeFrame
-          html={serveHtml}
-          code={r.serve}
-          filename="server.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.serve} filename="server.ts" lang="ts" />
         <Callout label="Miss one?">
           If a group isn&apos;t provided before <Code>layer</Code> evaluates, it
           fails loudly with a defect naming the missing group — never a silent
@@ -365,19 +281,9 @@ export default async function Page() {
           params declare what it <Code>provides</Code> into handlers and
           requires; its options declare a typed <Code>error</Code>.
         </p>
-        <CodeFrame
-          html={middlewareHtml}
-          code={r.middleware}
-          filename="middleware.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.middleware} filename="middleware.ts" lang="ts" />
         <p className="prose-text">Attach it at any altitude:</p>
-        <CodeFrame
-          html={attachHtml}
-          code={ATTACH}
-          filename="middleware.ts"
-          lang="ts"
-        />
+        <CodeFrame {...menu.attach} filename="middleware.ts" lang="ts" />
         <ModuleNote module="HttpApiMiddleware">
           <Code>layerSchemaErrorTransform</Code> turns <Code>400</Code> decode
           failures into your own error; <Code>layerClient</Code> supplies the
@@ -393,21 +299,11 @@ export default async function Page() {
           The implementation is keyed by scheme name and receives the decoded
           credential automatically — no manual header parsing.
         </p>
-        <CodeFrame
-          html={securityHtml}
-          code={r.security}
-          filename="security.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.security} filename="security.ts" lang="ts" />
         <p className="prose-text">
           Three schemes, each handing you a typed credential:
         </p>
-        <CodeFrame
-          html={schemesHtml}
-          code={SCHEMES}
-          filename="HttpApiSecurity"
-          lang="ts"
-        />
+        <CodeFrame {...menu.schemes} filename="HttpApiSecurity" lang="ts" />
         <ModuleNote module="HttpApiBuilder">
           Multiple schemes in one middleware are tried in order until one
           succeeds. Set an API-key cookie from a handler with{" "}
@@ -422,31 +318,16 @@ export default async function Page() {
           requests and decode responses through the very same schemas.
           Non-topLevel groups nest; topLevel endpoints sit on the root.
         </p>
-        <CodeFrame
-          html={clientHtml}
-          code={r.client}
-          filename="client.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.client} filename="client.ts" lang="ts" />
         <p className="prose-text">
           A per-call <Code>responseMode</Code> chooses what comes back:
         </p>
-        <CodeFrame
-          html={responseModeHtml}
-          code={RESPONSE_MODE}
-          filename="client.ts"
-          lang="ts"
-        />
+        <CodeFrame {...menu.responseMode} filename="client.ts" lang="ts" />
         <p className="prose-text">
           Need only the URL? <Code>urlBuilder</Code> mirrors the client shape
           but returns strings.
         </p>
-        <CodeFrame
-          html={urlbuilderHtml}
-          code={r.urlbuilder}
-          filename="client.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.urlbuilder} filename="client.ts" lang="ts" />
         <ModuleNote module="HttpApiClient">
           <Code>makeWith</Code> takes your own <Code>HttpClient</Code>;{" "}
           <Code>group</Code> and <Code>endpoint</Code> build just one slice when
@@ -461,14 +342,9 @@ export default async function Page() {
           OpenAPI 3.1; <Code>HttpApiScalar</Code> / <Code>HttpApiSwagger</Code>{" "}
           mount a browsable UI.
         </p>
-        <CodeFrame html={docsHtml} code={r.docs} filename="docs.ts" lang="ts" />
+        <CodeFrame {...snip.docs} filename="docs.ts" lang="ts" />
         <p className="prose-text">Shape the document with annotations:</p>
-        <CodeFrame
-          html={openapiHtml}
-          code={OPENAPI}
-          filename="OpenApi"
-          lang="ts"
-        />
+        <CodeFrame {...menu.openapi} filename="OpenApi" lang="ts" />
         <ModuleNote module="HttpApiScalar / HttpApiSwagger">
           <Code>HttpApiScalar.layerCdn</Code> loads Scalar from jsDelivr;{" "}
           <Code>HttpApiSwagger.layer(api, &#123; path &#125;)</Code> serves
@@ -483,12 +359,7 @@ export default async function Page() {
           the real encode → route → decode pipeline. No socket, no port — just
           the typed client against your handlers.
         </p>
-        <CodeFrame
-          html={testHtml}
-          code={r.test}
-          filename="api.test.ts"
-          lang="ts"
-        />
+        <CodeFrame {...snip.test} filename="api.test.ts" lang="ts" />
         <Quote label="One contract, five payoffs">
           Endpoint → Group → Api gives you the server, the client, the URL
           builder, the OpenAPI doc, and the test rig — all from the same value,
@@ -516,23 +387,13 @@ export default async function Page() {
           </p>
         </Reveal>
         <div className="mt-8 space-y-5">
-          <CodeFrame
-            html={capstoneHtml}
-            code={r.capstone}
-            filename="todos.ts"
-            lang="ts"
-          />
+          <CodeFrame {...snip.capstone} filename="todos.ts" lang="ts" />
           <p className="prose-text">
             And because it&apos;s the same <Code>todosApi</Code> value,
             consuming it is free — a typed client over HTTP, and an in-memory
             test that never opens a socket:
           </p>
-          <CodeFrame
-            html={capstoneConsumeHtml}
-            code={r["capstone-consume"]}
-            filename="todos.consume.ts"
-            lang="ts"
-          />
+          <CodeFrame {...snip["capstone-consume"]} filename="todos.consume.ts" lang="ts" />
           <Quote label="That's the whole point">
             You wrote the contract once. The server, the{" "}
             <span className="text-cyan">client</span>, the{" "}

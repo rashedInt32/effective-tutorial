@@ -1,8 +1,8 @@
-import Link from "next/link"
 import type { Metadata } from "next"
-import { highlight, loadRegions } from "@/lib/code"
+import { highlight, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
 import { Reveal } from "@/app/_components/Reveal"
+import { Hero, LessonNav } from "@/app/_components/LessonShell"
 import { ScrollStack, type StackItem } from "@/app/_components/ScrollStack"
 import { RuntimeToggle, type RuntimeVariant } from "@/app/_components/RuntimeToggle"
 import { Section, Callout, ModuleNote, Code } from "@/app/_components/Prose"
@@ -15,27 +15,19 @@ export const metadata: Metadata = {
 const FILE = "backend/01-create-and-run-server.ts"
 
 export default async function Lesson() {
-  const r = loadRegions(FILE)
-
-  // Highlight everything we need in parallel.
-  const [
-    pkgHtml,
-    curlHtml,
-    routeHtml,
-    genHtml,
-    fnHtml,
-    pipeHtml,
-    nodeHtml,
-    bunHtml
-  ] = await Promise.all([
+  // File-backed snippets (shown code === copied code, kept honest by typecheck).
+  const snip = await highlightRegions(FILE, [
+    "route",
+    "handler-gen",
+    "handler-fn",
+    "handler-pipe",
+    "server-node",
+    "server-bun"
+  ])
+  // Terminal snippets show an annotated command but copy only the bare command.
+  const [pkgHtml, curlHtml] = await Promise.all([
     highlight("pnpm add effect @effect/platform-node\n# Bun runtime (optional): pnpm add @effect/platform-bun", "bash"),
-    highlight("curl localhost:3000\n# → Hello from Effect!", "bash"),
-    highlight(r.route, "ts"),
-    highlight(r["handler-gen"], "ts"),
-    highlight(r["handler-fn"], "ts"),
-    highlight(r["handler-pipe"], "ts"),
-    highlight(r["server-node"], "ts"),
-    highlight(r["server-bun"], "ts")
+    highlight("curl localhost:3000\n# → Hello from Effect!", "bash")
   ])
 
   const stack: StackItem[] = [
@@ -43,8 +35,7 @@ export default async function Lesson() {
       id: "gen",
       badge: "Effect.gen",
       title: "The generator style",
-      html: genHtml,
-      code: r["handler-gen"],
+      ...snip["handler-gen"],
       filename: "handler.ts",
       desc: "Sequential and readable, like async/await. Reach for it once a handler has more than one step. Adjacent: Effect.succeed, Effect.flatMap, Effect.tap."
     },
@@ -52,8 +43,7 @@ export default async function Lesson() {
       id: "fn",
       badge: "Effect.fn",
       title: "The named, traced style",
-      html: fnHtml,
-      code: r["handler-fn"],
+      ...snip["handler-fn"],
       filename: "handler.ts",
       desc: "Same body, but it receives the request and emits a span named \"hello\" for tracing. Use Effect.fnUntraced when you want the function form without the span."
     },
@@ -61,8 +51,7 @@ export default async function Lesson() {
       id: "pipe",
       badge: "pipe",
       title: "The point-free style",
-      html: pipeHtml,
-      code: r["handler-pipe"],
+      ...snip["handler-pipe"],
       filename: "handler.ts",
       desc: "Compose with combinators — no generator. Best for short, branch-free handlers. Adjacent: Effect.map, Effect.as, Effect.zipRight, Effect.tap."
     }
@@ -72,16 +61,14 @@ export default async function Lesson() {
     {
       id: "node",
       label: "Node",
-      html: nodeHtml,
-      code: r["server-node"],
+      ...snip["server-node"],
       filename: "server.ts",
       note: "NodeHttpServer.layer binds a Node http.Server to the port; Layer.launch keeps it alive; NodeRuntime.runMain wires up Ctrl+C and error logging."
     },
     {
       id: "bun",
       label: "Bun",
-      html: bunHtml,
-      code: r["server-bun"],
+      ...snip["server-bun"],
       filename: "server.ts",
       note: "The app layer is identical — only the platform layer and runtime change. BunHttpServer.layer needs no createServer; Bun.serve owns the socket. Run it with `bun server.ts`."
     }
@@ -90,25 +77,17 @@ export default async function Lesson() {
   return (
     <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
       {/* Hero */}
-      <Reveal>
-        <Link
-          href="/"
-          className="text-sm font-mono text-muted hover:text-foreground transition-colors"
-        >
-          ← all lessons
-        </Link>
-        <p className="mt-8 text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-          Backend · Lesson 01
-        </p>
-        <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight">
-          Create <span className="text-gradient">&amp; run</span> a server
-        </h1>
-        <p className="mt-5 text-lg text-muted leading-relaxed">
-          The very first question: how do I stand up an HTTP server in Effect, and
-          how do I actually run it? Let&apos;s answer that — and every small question
-          hiding inside it.
-        </p>
-      </Reveal>
+      <Hero
+        eyebrow="Backend · Lesson 01"
+        title={<>Create <span className="text-gradient">&amp; run</span> a server</>}
+        intro={
+          <>
+            The very first question: how do I stand up an HTTP server in Effect, and
+            how do I actually run it? Let&apos;s answer that — and every small question
+            hiding inside it.
+          </>
+        }
+      />
 
       {/* Q1 — packages */}
       <Section n="Q1" title="What do I need to install?">
@@ -131,7 +110,7 @@ export default async function Lesson() {
           A route is just a <strong>Layer</strong> that registers one handler with the
           router. <Code>HttpServerResponse.text(...)</Code> builds a plain-text reply.
         </p>
-        <CodeFrame html={routeHtml} code={r.route} filename="route.ts" lang="ts" />
+        <CodeFrame {...snip.route} filename="route.ts" lang="ts" />
         <ModuleNote module="HttpRouter">
           <Code>addAll([...])</Code> for many routes, <Code>route()</Code> to build a
           route value, <Code>prefixPath</Code> to mount a group under a path,{" "}
@@ -184,15 +163,7 @@ export default async function Lesson() {
       </Section>
 
       {/* Next */}
-      <div className="mt-28 border-t border-border pt-10">
-        <p className="text-sm text-muted">Next question →</p>
-        <Link
-          href="/backend/02-endpoints-and-responses"
-          className="mt-2 inline-block text-xl font-semibold text-foreground hover:text-cyan transition-colors"
-        >
-          02 · Endpoints &amp; responses (JSON, status codes, headers) →
-        </Link>
-      </div>
+      <LessonNav currentSlug="01-create-and-run-server" />
     </main>
   )
 }

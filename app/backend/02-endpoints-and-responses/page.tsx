@@ -1,8 +1,9 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { highlight, loadRegions } from "@/lib/code"
+import { highlight, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
 import { Reveal } from "@/app/_components/Reveal"
+import { Hero, LessonNav } from "@/app/_components/LessonShell"
 import { ScrollStack, type StackItem } from "@/app/_components/ScrollStack"
 import { Section, Callout, ModuleNote, Code } from "@/app/_components/Prose"
 
@@ -14,28 +15,19 @@ export const metadata: Metadata = {
 const FILE = "backend/02-endpoints-and-responses.ts"
 
 export default async function Lesson() {
-  const r = loadRegions(FILE)
-
-  const [
-    jsonHtml,
-    bodyJsonHtml,
-    bodyUnsafeHtml,
-    bodySchemaHtml,
-    statusHtml,
-    headersHtml,
-    readBodyHtml,
-    routesHtml,
-    getCurlHtml,
-    echoCurlHtml
-  ] = await Promise.all([
-    highlight(r.json, "ts"),
-    highlight(r["body-json"], "ts"),
-    highlight(r["body-unsafe"], "ts"),
-    highlight(r["body-schema"], "ts"),
-    highlight(r.status, "ts"),
-    highlight(r.headers, "ts"),
-    highlight(r["read-body"], "ts"),
-    highlight(r.routes, "ts"),
+  // File-backed snippets (shown code === copied code, kept honest by typecheck).
+  const snip = await highlightRegions(FILE, [
+    "json",
+    "body-json",
+    "body-unsafe",
+    "body-schema",
+    "status",
+    "headers",
+    "read-body",
+    "routes"
+  ])
+  // Terminal snippets show an annotated command but copy only the bare command.
+  const [getCurlHtml, echoCurlHtml] = await Promise.all([
     highlight("curl localhost:3000/user\n# → {\"id\":1,\"name\":\"Ada Lovelace\",\"admin\":true}", "bash"),
     highlight("curl -X POST localhost:3000/echo -d '{\"hi\":true}'\n# → {\"youSent\":{\"hi\":true}}", "bash")
   ])
@@ -45,8 +37,7 @@ export default async function Lesson() {
       id: "json",
       badge: "json",
       title: "Safe — the default",
-      html: bodyJsonHtml,
-      code: r["body-json"],
+      ...snip["body-json"],
       filename: "responses.ts",
       desc: "Returns Effect<HttpServerResponse, HttpBodyError>. Serialization failures land in the error channel, so a bad body can never silently ship as a 200. Reach for this unless you have a reason not to."
     },
@@ -54,8 +45,7 @@ export default async function Lesson() {
       id: "unsafe",
       badge: "jsonUnsafe",
       title: "Synchronous — no Effect",
-      html: bodyUnsafeHtml,
-      code: r["body-unsafe"],
+      ...snip["body-unsafe"],
       filename: "responses.ts",
       desc: "Plain HttpServerResponse, no error channel. JSON.stringify throws on failure instead of failing the Effect. Use only when the body is provably serializable. Adjacent: text, html, empty."
     },
@@ -63,8 +53,7 @@ export default async function Lesson() {
       id: "schema",
       badge: "schemaJson",
       title: "Encoded through a Schema",
-      html: bodySchemaHtml,
-      code: r["body-schema"],
+      ...snip["body-schema"],
       filename: "responses.ts",
       desc: "Validate and transform before serializing — Date → ISO string, branded types, redacted fields. Returns a reusable encoder. This is the bridge into Lesson 03. Adjacent: schemaJsonUnsafe."
     }
@@ -73,25 +62,17 @@ export default async function Lesson() {
   return (
     <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
       {/* Hero */}
-      <Reveal>
-        <Link
-          href="/"
-          className="text-sm font-mono text-muted hover:text-foreground transition-colors"
-        >
-          ← all lessons
-        </Link>
-        <p className="mt-8 text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-          Backend · Lesson 02
-        </p>
-        <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight">
-          Endpoints <span className="text-gradient">&amp; responses</span>
-        </h1>
-        <p className="mt-5 text-lg text-muted leading-relaxed">
-          Lesson 01 replied with plain text. Real endpoints send JSON, choose a
-          status, set headers, and read what the client sent. Each is its own
-          small question — let&apos;s walk them.
-        </p>
-      </Reveal>
+      <Hero
+        eyebrow="Backend · Lesson 02"
+        title={<>Endpoints <span className="text-gradient">&amp; responses</span></>}
+        intro={
+          <>
+            Lesson 01 replied with plain text. Real endpoints send JSON, choose a
+            status, set headers, and read what the client sent. Each is its own
+            small question — let&apos;s walk them.
+          </>
+        }
+      />
 
       {/* Q1 — JSON */}
       <Section n="Q1" title="How do I send JSON back?">
@@ -101,7 +82,7 @@ export default async function Lesson() {
           <strong>Effect</strong>, not a bare response — so your handler simply{" "}
           <em>is</em> that Effect.
         </p>
-        <CodeFrame html={jsonHtml} code={r.json} filename="responses.ts" lang="ts" />
+        <CodeFrame {...snip.json} filename="responses.ts" lang="ts" />
         <Callout label="Why an Effect?">
           Serialization can blow up (a <Code>BigInt</Code>, a circular object).{" "}
           <Code>json</Code> captures that as <Code>HttpBodyError</Code> in the
@@ -137,7 +118,7 @@ export default async function Lesson() {
           Two ways: pass <Code>status</Code> in the options object when you build
           the response, or layer <Code>setStatus</Code> onto an existing one.
         </p>
-        <CodeFrame html={statusHtml} code={r.status} filename="responses.ts" lang="ts" />
+        <CodeFrame {...snip.status} filename="responses.ts" lang="ts" />
         <Callout label="Defaults">
           Body constructors default to <Code>200</Code>, <Code>empty</Code> to{" "}
           <Code>204</Code>, and <Code>redirect</Code> to <Code>302</Code>. You only
@@ -152,7 +133,7 @@ export default async function Lesson() {
           Every response is immutable, so each returns a new one and they chain in
           a <Code>pipe</Code>.
         </p>
-        <CodeFrame html={headersHtml} code={r.headers} filename="responses.ts" lang="ts" />
+        <CodeFrame {...snip.headers} filename="responses.ts" lang="ts" />
         <ModuleNote module="HttpServerResponse">
           <Code>setBody</Code> swaps the body, <Code>setCookie</Code> /{" "}
           <Code>expireCookie</Code> manage cookies (in the error channel —{" "}
@@ -170,7 +151,7 @@ export default async function Lesson() {
           body is effectful — <Code>request.json</Code> can fail to read or parse —
           so you <Code>yield*</Code> it like any other Effect.
         </p>
-        <CodeFrame html={readBodyHtml} code={r["read-body"]} filename="responses.ts" lang="ts" />
+        <CodeFrame {...snip["read-body"]} filename="responses.ts" lang="ts" />
         <CodeFrame html={echoCurlHtml} code="curl -X POST localhost:3000/echo -d '{&quot;hi&quot;:true}'" filename="terminal" lang="bash" />
         <ModuleNote module="HttpServerRequest">
           Raw accessors <Code>text</Code>, <Code>urlParamsBody</Code>,{" "}
@@ -191,16 +172,11 @@ export default async function Lesson() {
           </Link>
           .
         </p>
-        <CodeFrame html={routesHtml} code={r.routes} filename="routes.ts" lang="ts" />
+        <CodeFrame {...snip.routes} filename="routes.ts" lang="ts" />
       </Section>
 
       {/* Next */}
-      <div className="mt-28 border-t border-border pt-10">
-        <p className="text-sm text-muted">Next question →</p>
-        <p className="mt-2 text-xl font-semibold text-muted/60">
-          03 · Schemas: payload, response &amp; errors
-        </p>
-      </div>
+      <LessonNav currentSlug="02-endpoints-and-responses" />
     </main>
   )
 }
