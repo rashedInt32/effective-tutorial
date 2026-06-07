@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Effect, on point — a learn-by-doing tutorial
 
-## Getting Started
+A tutorial site that teaches [Effect](https://effect.website) v4 by answering one
+real question at a time, with code you can run. Built with Next.js (App Router),
+Tailwind v4, Shiki, and Motion.
 
-First, run the development server:
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm dev        # start the dev server  → http://localhost:3000
+pnpm build      # production build (also typechecks + highlights every snippet)
+pnpm typecheck  # tsc --noEmit
+pnpm lint       # eslint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm build` is the real gate: every lesson page highlights its snippets at build
+time, so a broken example or a renamed region fails the build (see below).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it's organized
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx                     Home — the lesson index
+  backend/<lesson>/page.tsx    One lesson page (a React Server Component)
+  _components/                 Presentational + interactive UI (CodeFrame, ScrollStack, …)
+  globals.css                  The dark "devtools + glow" design system
+examples/
+  backend/<lesson>.ts          The real, typechecked source the snippets are lifted from
+lib/
+  code.ts                      Snippet loading + Shiki highlighting
+```
 
-## Learn More
+### The core invariant: shown code === code that typechecks
 
-To learn more about Next.js, take a look at the following resources:
+The code displayed in a lesson is **not** pasted into the page. It lives in a real
+`.ts` file under `examples/`, marked into named regions:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ts
+// #region handler-gen
+export const helloGen = Effect.gen(function* () {
+  return HttpServerResponse.text("Hello from Effect!")
+})
+// #endregion handler-gen
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A page pulls those regions in and highlights them:
 
-## Deploy on Vercel
+```ts
+const snip = await highlightRegions("backend/01-create-and-run-server.ts", [
+  "handler-gen",
+  "route"
+])
+// snip["handler-gen"] = { code, html } — spread straight into a <CodeFrame />
+<CodeFrame {...snip["handler-gen"]} filename="handler.ts" />
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Because the examples are part of the project's `tsconfig`, `pnpm typecheck` keeps
+every shown snippet honest. If you rename or delete a region, `highlightRegions`
+throws a clear build error naming the missing id — never a cryptic highlighter
+crash.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For inline snippets that aren't backed by a file (terminal commands, hand-curated
+reference menus), use `highlight` (one snippet) or `highlightAll` (a keyed set).
+The reference menus on the HttpApi page are intentionally hand-curated, not lifted
+from source — the page's prose says so.
+
+## Adding a lesson
+
+1. Write a runnable, typechecking `examples/backend/<nn>-<slug>.ts`, marking the
+   snippets to show with `// #region <id>` / `// #endregion <id>`.
+2. Create `app/backend/<nn>-<slug>/page.tsx`, load the regions with
+   `highlightRegions`, and lay out prose with the primitives in
+   `app/_components/Prose.tsx` (`Section`, `Callout`, `ModuleNote`, `Quote`, `Code`).
+3. Add the lesson to the index array in `app/page.tsx`.
+4. Run `pnpm build` — it typechecks the example and proves every region renders.
