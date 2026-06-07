@@ -53,6 +53,12 @@ export const referencePages: readonly ReferencePage[] = [
     title: "Data & Match",
     desc: "Value equality, tagged unions, and exhaustive pattern matching.",
     ready: true
+  },
+  {
+    slug: "ref-queue",
+    title: "Ref & Queue",
+    desc: "Fiber-safe state and messaging — an atomic cell and an async channel.",
+    ready: true
   }
 ]
 
