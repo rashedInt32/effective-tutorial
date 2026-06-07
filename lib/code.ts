@@ -16,10 +16,56 @@ function getHighlighter() {
   return highlighterPromise
 }
 
+type Lang = "ts" | "bash"
+
+/** A code snippet paired with its highlighted HTML — the props a CodeFrame needs. */
+export type Snippet = { code: string; html: string }
+
 /** Highlight a code string to HTML using our dark theme. */
-export async function highlight(code: string, lang: "ts" | "bash" = "ts") {
+export async function highlight(code: string, lang: Lang = "ts") {
   const highlighter = await getHighlighter()
   return highlighter.codeToHtml(code, { lang, theme: THEME })
+}
+
+/**
+ * Highlight a keyed set of snippets in parallel. Returns a map of the same keys
+ * to `{ code, html }`, each spreadable straight into a <CodeFrame />. Use this
+ * for inline (non-file) snippets where the shown code is the copied code.
+ */
+export async function highlightAll<K extends string>(
+  inputs: Record<K, { code: string; lang?: Lang }>
+): Promise<Record<K, Snippet>> {
+  const entries = await Promise.all(
+    (Object.entries(inputs) as [K, { code: string; lang?: Lang }][]).map(
+      async ([key, { code, lang = "ts" }]) =>
+        [key, { code, html: await highlight(code, lang) }] as const
+    )
+  )
+  return Object.fromEntries(entries) as Record<K, Snippet>
+}
+
+/**
+ * Load `examples/<relativePath>` and highlight the requested regions in
+ * parallel, returning a `{ code, html }` map keyed by region id. Throws with a
+ * clear message if any requested id is absent — so a renamed or deleted region
+ * fails loudly at build time instead of crashing the highlighter on `undefined`.
+ */
+export async function highlightRegions<const Ids extends readonly string[]>(
+  relativePath: string,
+  ids: Ids
+): Promise<Record<Ids[number], Snippet>> {
+  const regions = loadRegions(relativePath)
+  const missing = ids.filter((id) => !(id in regions))
+  if (missing.length > 0) {
+    throw new Error(
+      `examples/${relativePath} is missing region(s): ${missing.join(", ")}.\n` +
+        `Found: ${Object.keys(regions).join(", ") || "(none)"}`
+    )
+  }
+  const inputs = Object.fromEntries(
+    ids.map((id) => [id, { code: regions[id], lang: "ts" as const }])
+  ) as Record<Ids[number], { code: string; lang: Lang }>
+  return highlightAll(inputs)
 }
 
 /**
