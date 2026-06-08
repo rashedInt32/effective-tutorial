@@ -84,6 +84,92 @@ export const allMethods = [
 ]
 // #endregion methods
 
+// #region status-endpoints
+// The encodings from the menu aren't free-floating helpers — you hang them on an
+// endpoint's `success` schema, and that one annotation decides the status code
+// and content type on the wire. One resource, four different responses:
+const Report = Schema.Struct({ id: Schema.String, rows: Schema.Number })
+
+const reportsGroup = HttpApiGroup.make("reports").add(
+  // 201 + JSON body — `status` rides along on the success schema
+  HttpApiEndpoint.post("createReport", "/reports", {
+    payload: Schema.Struct({ rows: Schema.Number }),
+    success: Report.pipe(HttpApiSchema.status(201))
+  }),
+  // 204, empty body — the canonical "deleted, nothing to return" response
+  HttpApiEndpoint.delete("deleteReport", "/reports/:id", {
+    params: { id: Schema.String },
+    success: HttpApiSchema.NoContent
+  }),
+  // text/csv, not JSON — `asText` flips the body encoding (Encoded side: string)
+  HttpApiEndpoint.get("exportCsv", "/reports/:id/csv", {
+    params: { id: Schema.String },
+    success: Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/csv" }))
+  }),
+  // raw bytes — `asUint8Array` for a binary download (Encoded side: Uint8Array)
+  HttpApiEndpoint.get("downloadPdf", "/reports/:id/pdf", {
+    params: { id: Schema.String },
+    success: Schema.Uint8Array.pipe(HttpApiSchema.asUint8Array({ contentType: "application/pdf" }))
+  })
+)
+
+export const reportsApi = HttpApi.make("Reports").add(reportsGroup)
+// #endregion status-endpoints
+
+// #region status-handlers
+// Each handler returns exactly what its success schema describes — the plain
+// value for the JSON / text / binary shapes, and `Effect.void` for the 204. The
+// status code and content-type are already baked into the contract, so there is
+// nothing to set by hand.
+export const ReportsLive = HttpApiBuilder.group(reportsApi, "reports", (handlers) =>
+  handlers
+    .handle("createReport", ({ payload }) =>
+      Effect.succeed({ id: "rpt_1", rows: payload.rows })) // encoded as 201 JSON
+    .handle("deleteReport", () => Effect.void) // encoded as 204, no body
+    .handle("exportCsv", ({ params }) =>
+      Effect.succeed(`id,rows\n${params.id},42`)) // sent as text/csv
+    .handle("downloadPdf", () =>
+      Effect.succeed(new Uint8Array([0x25, 0x50, 0x44, 0x46]))) // sent as application/pdf
+)
+// #endregion status-handlers
+
+// #region error-endpoints
+// Built-in errors tie in the same way: list them on the endpoint's `error`. An
+// array declares several at once — together they form the route's complete,
+// typed failure surface. Each error already carries its own status, so the
+// handler never touches `setStatus`.
+const balances = new Map<string, number>([["acme", 100]])
+
+const billingGroup = HttpApiGroup.make("billing").add(
+  HttpApiEndpoint.post("charge", "/accounts/:id/charge", {
+    params: { id: Schema.String },
+    payload: Schema.Struct({ amount: Schema.Number }),
+    success: Schema.Struct({ balance: Schema.Number }),
+    // three declared failures — 404, 403, 409 — all from the catalog
+    error: [HttpApiError.NotFound, HttpApiError.Forbidden, HttpApiError.Conflict]
+  })
+)
+
+export const billingApi = HttpApi.make("Billing").add(billingGroup)
+// #endregion error-endpoints
+
+// #region error-handlers
+// The compiler holds the handler to that surface: only the three declared
+// errors typecheck as failures, and each `fail` becomes the right status on the
+// wire automatically — no envelope, no catch, no `setStatus`.
+export const BillingLive = HttpApiBuilder.group(billingApi, "billing", (handlers) =>
+  handlers.handle("charge", ({ params, payload }) =>
+    Effect.gen(function* () {
+      const balance = balances.get(params.id)
+      if (balance === undefined) return yield* new HttpApiError.NotFound() // 404
+      if (payload.amount <= 0) return yield* new HttpApiError.Forbidden() // 403
+      if (payload.amount > balance) return yield* new HttpApiError.Conflict() // 409
+      return { balance: balance - payload.amount }
+    })
+  )
+)
+// #endregion error-handlers
+
 // #region group
 // A group bundles endpoints under one domain name. `add` is variadic (same
 // name replaces); `prefix`/`middleware` only touch endpoints already added.

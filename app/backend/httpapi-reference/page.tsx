@@ -77,6 +77,10 @@ export default async function Page() {
     "endpoint-basic",
     "endpoint-full",
     "methods",
+    "status-endpoints",
+    "status-handlers",
+    "error-endpoints",
+    "error-handlers",
     "group",
     "group-toplevel",
     "api",
@@ -190,6 +194,21 @@ export default async function Page() {
           <strong className="text-foreground">payload-only</strong> — a
           multipart response is rejected.
         </Quote>
+        <p className="prose-text mt-8">
+          Those combinators only matter once they&apos;re on an endpoint. Hang
+          each one on a <Code>success</Code> schema and the same resource speaks
+          four different wire shapes — a <Code>201</Code> JSON body, a{" "}
+          <Code>204</Code> with no body, a CSV export, and a binary download —
+          all from the declaration alone:
+        </p>
+        <CodeFrame {...snip["status-endpoints"]} filename="reports.ts" lang="ts" />
+        <p className="prose-text">
+          The handlers stay boring on purpose: each returns the plain value its
+          schema describes (and <Code>Effect.void</Code> for the{" "}
+          <Code>204</Code>). The status code and <Code>content-type</Code> are
+          already baked into the contract — there&apos;s nothing to set by hand.
+        </p>
+        <CodeFrame {...snip["status-handlers"]} filename="reports.ts" lang="ts" />
       </Section>
 
       {/* 04 — errors */}
@@ -199,6 +218,20 @@ export default async function Page() {
           <Code>error</Code> schemas or return them straight from a handler.
         </p>
         <CodeFrame {...menu.errors} filename="HttpApiError" lang="ts" />
+        <p className="prose-text mt-8">
+          They tie into a route the same way the success schema does — list them
+          on <Code>error</Code>. An array declares several at once, and together
+          they become the endpoint&apos;s complete, typed failure surface:
+        </p>
+        <CodeFrame {...snip["error-endpoints"]} filename="billing.ts" lang="ts" />
+        <p className="prose-text">
+          Inside the handler the compiler holds you to exactly those three:
+          anything else won&apos;t typecheck as a failure. Each{" "}
+          <Code>fail</Code> renders at its own status —{" "}
+          <Code>404</Code> / <Code>403</Code> / <Code>409</Code> — with no{" "}
+          <Code>setStatus</Code>, no envelope, and no <Code>catch</Code>:
+        </p>
+        <CodeFrame {...snip["error-handlers"]} filename="billing.ts" lang="ts" />
         <ModuleNote module="HttpApiError">
           Request decoding failures surface as <Code>HttpApiSchemaError</Code>{" "}
           (responds <Code>400</Code>, with a <Code>kind</Code> of{" "}
