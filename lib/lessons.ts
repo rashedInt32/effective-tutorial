@@ -38,17 +38,26 @@ export const lessons: readonly Lesson[] = [
   }
 ]
 
-/** Out-of-sequence reference page: listed on the index, not in the next-chain. */
-export const reference: Lesson = {
-  slug: "httpapi-reference",
-  n: "★",
-  title: "HttpApi — the whole map",
-  desc: "One contract → server, typed client, URL builder, OpenAPI docs, tests.",
-  ready: true
-}
+/** Out-of-sequence reference pages: listed on the index, not in the next-chain. */
+export const references: readonly Lesson[] = [
+  {
+    slug: "http-reference",
+    n: "★",
+    title: "http — the whole map",
+    desc: "Request, response, router, middleware, errors, cookies, client — the server toolkit.",
+    ready: true
+  },
+  {
+    slug: "httpapi-reference",
+    n: "★",
+    title: "HttpApi — the whole map",
+    desc: "One contract → server, typed client, URL builder, OpenAPI docs, tests.",
+    ready: true
+  }
+]
 
 /** Everything shown on the home index, in display order. */
-export const indexCards: readonly Lesson[] = [...lessons, reference]
+export const indexCards: readonly Lesson[] = [...lessons, ...references]
 
 export const lessonHref = (slug: string) => `/backend/${slug}`
 
