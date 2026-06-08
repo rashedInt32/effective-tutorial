@@ -53,6 +53,13 @@ export const references: readonly Lesson[] = [
     title: "HttpApi — the whole map",
     desc: "One contract → server, typed client, URL builder, OpenAPI docs, tests.",
     ready: true
+  },
+  {
+    slug: "sql-reference",
+    n: "★",
+    title: "sql — the whole map",
+    desc: "Safe queries, typed schemas, batched resolvers, models, migrations, errors.",
+    ready: true
   }
 ]
 
