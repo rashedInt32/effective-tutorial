@@ -60,6 +60,13 @@ export const references: readonly Lesson[] = [
     title: "sql — the whole map",
     desc: "Safe queries, typed schemas, batched resolvers, models, migrations, errors.",
     ready: true
+  },
+  {
+    slug: "global-runtime",
+    n: "★",
+    title: "Global runtime — one source of truth",
+    desc: "One ManagedRuntime from your app layer, run from RSCs, route handlers, actions.",
+    ready: true
   }
 ]
 
