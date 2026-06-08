@@ -70,9 +70,6 @@ export const references: readonly Lesson[] = [
   }
 ]
 
-/** Everything shown on the home index, in display order. */
-export const indexCards: readonly Lesson[] = [...lessons, ...references]
-
 export const lessonHref = (slug: string) => `/backend/${slug}`
 
 /** The lesson after `slug` in the sequential chain, if any. */
