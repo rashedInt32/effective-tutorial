@@ -2,10 +2,10 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { highlight, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero, LessonNav } from "@/app/_components/LessonShell"
 import { ScrollStack, type StackItem } from "@/app/_components/ScrollStack"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
+import { lessonBySlug } from "@/lib/catalog"
 
 export const metadata: Metadata = {
   title: "03 · Schemas: payload, response & errors — Effect backend",
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 }
 
 const FILE = "backend/03-schemas.ts"
+const LESSON = lessonBySlug("03-schemas")
 
 export default async function Lesson() {
   // File-backed snippets (shown code === copied code, kept honest by typecheck).
@@ -70,10 +71,10 @@ export default async function Lesson() {
   ]
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
-        eyebrow="Backend · Lesson 03"
+        eyebrow={`Backend · Lesson ${LESSON.n}`}
         title={<>Schemas: <span className="text-gradient">payload, response &amp; errors</span></>}
         intro={
           <>
@@ -139,23 +140,20 @@ export default async function Lesson() {
       </Section>
 
       {/* Q3 — every part, decoded (STACK) */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Q3 · same decode, every source
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">body, query, or headers?</span>
-          </h2>
-          <p className="mt-4 prose-text">
-            Every part of the request decodes through a schema the same way — only
-            the source changes. Scroll — each source stacks over the last.
-          </p>
-        </Reveal>
-        <div className="mt-10">
-          <ScrollStack items={stack} />
-        </div>
-      </section>
+      <Section
+        n="Q3 · same decode, every source"
+        title={<span className="text-gradient">body, query, or headers?</span>}
+        after={
+          <div className="mt-10">
+            <ScrollStack items={stack} />
+          </div>
+        }
+      >
+        <p className="prose-text">
+          Every part of the request decodes through a schema the same way — only
+          the source changes. Scroll — each source stacks over the last.
+        </p>
+      </Section>
 
       {/* Q4 — invalid */}
       <Section n="Q4" title="What happens when the input is invalid?">
@@ -248,7 +246,7 @@ export default async function Lesson() {
       </div>
 
       {/* Next (renders nothing once this is the last sequential lesson) */}
-      <LessonNav currentSlug="03-schemas" />
-    </main>
+      <LessonNav currentSlug={LESSON.slug} />
+    </>
   )
 }

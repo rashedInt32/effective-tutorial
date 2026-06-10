@@ -1,8 +1,6 @@
-import Link from "next/link"
 import type { Metadata } from "next"
 import { highlightAll, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
@@ -109,7 +107,7 @@ export default async function Page() {
   })
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
         eyebrow="Backend · Reference"
@@ -317,45 +315,35 @@ export default async function Page() {
       </Section>
 
       {/* Capstone */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Putting it together
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">One small service</span>, every piece
-          </h2>
-          <p className="mt-4 prose-text">
-            A tiny in-memory notes service built from the primitives: a schema and
-            a self-rendering error, three routes that list, fetch-by-id, and
-            create, with a typed param and body decode, CORS, then served on Node.
-            It&apos;s the whole <Code>request → handler → response</Code> pipeline
-            in one file, and it typechecks.
-          </p>
-        </Reveal>
-        <div className="mt-8 space-y-5">
-          <CodeFrame {...snip.capstone} filename="notes.ts" lang="ts" />
-          <p className="prose-text">
-            And because the schemas are shared, consuming it is symmetric — a
-            typed client that POSTs a note and decodes the created{" "}
-            <Code>Note</Code> back through the very same schema:
-          </p>
-          <CodeFrame {...snip["capstone-client"]} filename="notes.consume.ts" lang="ts" />
-          <Quote label="One layer down">
-            <Code>httpapi</Code> hands you all of this from a single declaration.
-            When you need to drop below it — a custom router, hand-rolled
-            middleware, a response the contract can&apos;t express — this is the
-            toolkit it was built from.
-          </Quote>
-        </div>
-      </section>
-
-      {/* Back */}
-      <div className="mt-28 border-t border-border pt-10">
-        <Link href="/" className="text-sm text-cyan hover:underline">
-          ← back to all lessons
-        </Link>
-      </div>
-    </main>
+      <Section
+        n="Putting it together"
+        title={<><span className="text-gradient">One small service</span>, every piece</>}
+        after={
+          <div className="mt-8 space-y-5">
+            <CodeFrame {...snip.capstone} filename="notes.ts" lang="ts" />
+            <p className="prose-text">
+              And because the schemas are shared, consuming it is symmetric — a
+              typed client that POSTs a note and decodes the created{" "}
+              <Code>Note</Code> back through the very same schema:
+            </p>
+            <CodeFrame {...snip["capstone-client"]} filename="notes.consume.ts" lang="ts" />
+            <Quote label="One layer down">
+              <Code>httpapi</Code> hands you all of this from a single declaration.
+              When you need to drop below it — a custom router, hand-rolled
+              middleware, a response the contract can&apos;t express — this is the
+              toolkit it was built from.
+            </Quote>
+          </div>
+        }
+      >
+        <p className="prose-text">
+          A tiny in-memory notes service built from the primitives: a schema and
+          a self-rendering error, three routes that list, fetch-by-id, and
+          create, with a typed param and body decode, CORS, then served on Node.
+          It&apos;s the whole <Code>request → handler → response</Code> pipeline
+          in one file, and it typechecks.
+        </p>
+      </Section>
+    </>
   )
 }

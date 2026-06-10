@@ -274,6 +274,8 @@ export const AuthLive = Layer.succeed(Auth, {
   bearer: (httpEffect, { credential }) =>
     Effect.gen(function* () {
       const token = Redacted.value(credential)
+      // Placeholder check, to keep the focus on the wiring — real code must
+      // verify the token (JWT verify / session lookup) before trusting it.
       if (token.length === 0) {
         return yield* new HttpApiError.Unauthorized()
       }
@@ -363,6 +365,7 @@ const AuthnLive = Layer.succeed(Authn, {
   bearer: (httpEffect, { credential }) =>
     Effect.gen(function* () {
       const token = Redacted.value(credential)
+      // Placeholder — real code verifies the token before trusting it.
       if (token.length === 0) return yield* new HttpApiError.Unauthorized()
       return yield* Effect.provideService(httpEffect, Account, { userId: token })
     })

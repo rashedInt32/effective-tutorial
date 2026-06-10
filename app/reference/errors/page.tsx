@@ -22,7 +22,7 @@ export default async function Page() {
   ])
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
         eyebrow="Reference · field guide"
@@ -111,13 +111,6 @@ export default async function Page() {
           <Code>fixed</Code>.
         </ModuleNote>
       </Section>
-
-      {/* Back */}
-      <div className="mt-28 border-t border-border pt-10">
-        <Link href="/" className="text-sm text-cyan hover:underline">
-          ← back to all sections
-        </Link>
-      </div>
-    </main>
+    </>
   )
 }

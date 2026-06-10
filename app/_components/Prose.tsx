@@ -1,18 +1,24 @@
 import type { ReactNode } from "react"
 import { Reveal } from "@/app/_components/Reveal"
 
-/* Shared prose primitives for the lesson + reference pages. Kept here so the
-   three backend pages render identical chrome from one source. */
+/* Shared prose primitives, rendered by every lesson + reference page so they
+   all draw identical chrome from one source. */
 
-/** A numbered lesson section with an animated heading. */
+/**
+ * A numbered section with an animated heading. `title` takes any node (gradient
+ * spans welcome); `after` renders outside the Reveal for scroll-linked content
+ * like a ScrollStack, which should not sit inside an animated wrapper.
+ */
 export function Section({
   n,
   title,
-  children
+  children,
+  after
 }: {
   n: string
-  title: string
+  title: ReactNode
   children: ReactNode
+  after?: ReactNode
 }) {
   return (
     <section className="mt-24">
@@ -21,6 +27,7 @@ export function Section({
         <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
         <div className="mt-6 space-y-5">{children}</div>
       </Reveal>
+      {after}
     </section>
   )
 }

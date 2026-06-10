@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import { highlight, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero, LessonNav } from "@/app/_components/LessonShell"
 import { ScrollStack, type StackItem } from "@/app/_components/ScrollStack"
 import { RuntimeToggle, type RuntimeVariant } from "@/app/_components/RuntimeToggle"
 import { Section, Callout, ModuleNote, Code } from "@/app/_components/Prose"
+import { lessonBySlug } from "@/lib/catalog"
 
 export const metadata: Metadata = {
   title: "01 · Create & run a server — Effect backend",
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 }
 
 const FILE = "backend/01-create-and-run-server.ts"
+const LESSON = lessonBySlug("01-create-and-run-server")
 
 export default async function Lesson() {
   // File-backed snippets (shown code === copied code, kept honest by typecheck).
@@ -75,10 +76,10 @@ export default async function Lesson() {
   ]
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
-        eyebrow="Backend · Lesson 01"
+        eyebrow={`Backend · Lesson ${LESSON.n}`}
         title={<>Create <span className="text-gradient">&amp; run</span> a server</>}
         intro={
           <>
@@ -121,23 +122,20 @@ export default async function Lesson() {
       </Section>
 
       {/* Q3 — the handler, three ways (STACK) */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Q3 · same handler, three ways
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
-            How do I write the handler — <span className="text-gradient">gen, fn, or pipe?</span>
-          </h2>
-          <p className="mt-4 prose-text">
-            All three produce the identical <Code>Effect&lt;HttpServerResponse&gt;</Code>.
-            Scroll — each style stacks over the last.
-          </p>
-        </Reveal>
-        <div className="mt-10">
-          <ScrollStack items={stack} />
-        </div>
-      </section>
+      <Section
+        n="Q3 · same handler, three ways"
+        title={<>How do I write the handler — <span className="text-gradient">gen, fn, or pipe?</span></>}
+        after={
+          <div className="mt-10">
+            <ScrollStack items={stack} />
+          </div>
+        }
+      >
+        <p className="prose-text">
+          All three produce the identical <Code>Effect&lt;HttpServerResponse&gt;</Code>.
+          Scroll — each style stacks over the last.
+        </p>
+      </Section>
 
       {/* Q4 — run it (TOGGLE) */}
       <Section n="Q4" title="How do I run it — and on Bun too?">
@@ -163,7 +161,7 @@ export default async function Lesson() {
       </Section>
 
       {/* Next */}
-      <LessonNav currentSlug="01-create-and-run-server" />
-    </main>
+      <LessonNav currentSlug={LESSON.slug} />
+    </>
   )
 }

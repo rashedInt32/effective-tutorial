@@ -19,12 +19,18 @@ import {
   Zap
 } from "lucide-react"
 import { Reveal } from "@/app/_components/Reveal"
-import { lessons, references, lessonHref } from "@/lib/lessons"
-import { referencePages, referenceHref } from "@/lib/reference"
+import {
+  type FieldGuideSlug,
+  fieldGuides,
+  lessons,
+  type WholeMapSlug,
+  wholeMaps
+} from "@/lib/catalog"
 
 /* A fitting icon per reference card, keyed by slug. Lessons keep their numeral;
-   the whole-map and field-guide cards each get a distinct topic icon. */
-const ICONS: Record<string, LucideIcon> = {
+   the whole-map and field-guide cards each get a distinct topic icon. The key
+   union makes the compiler reject a missing or stale slug. */
+const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
   // whole map
   "http-reference": Server,
   "httpapi-reference": Webhook,
@@ -71,7 +77,7 @@ export default function Home() {
         {lessons.map((l, i) => (
           <CatalogCard
             key={l.slug}
-            href={lessonHref(l.slug)}
+            href={l.href}
             mark={l.n}
             kind="Lesson"
             title={l.title}
@@ -88,10 +94,10 @@ export default function Home() {
         title="The whole map"
         blurb="One dense page per module — every option you reach for, on the table at once."
       >
-        {references.map((l, i) => (
+        {wholeMaps.map((l, i) => (
           <CatalogCard
             key={l.slug}
-            href={lessonHref(l.slug)}
+            href={l.href}
             Icon={ICONS[l.slug]}
             kind="Whole map"
             title={l.title}
@@ -108,10 +114,10 @@ export default function Home() {
         title="Field guide"
         blurb="Short, focused maps of the core API — what it is, the few combinators you actually use."
       >
-        {referencePages.map((p, i) => (
+        {fieldGuides.map((p, i) => (
           <CatalogCard
             key={p.slug}
-            href={referenceHref(p.slug)}
+            href={p.href}
             Icon={ICONS[p.slug]}
             kind="Guide"
             title={p.title}
@@ -208,8 +214,11 @@ function CatalogCard({
     </>
   )
 
+  // Same surface as .glass but without backdrop-filter — 18 of these on the
+  // home grid would each re-blur their backdrop, for no visible difference
+  // over the near-black page.
   const cardClass =
-    "relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.045] to-white/[0.012] p-6 backdrop-blur-md"
+    "relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.045] to-white/[0.015] p-6"
 
   return (
     <Reveal delay={delay} className="h-full">

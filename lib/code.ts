@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs"
-import { join } from "node:path"
+import { join, sep } from "node:path"
 import { createHighlighter, type Highlighter } from "shiki"
 
 const THEME = "one-dark-pro"
@@ -75,25 +75,60 @@ export async function highlightRegions<const Ids extends readonly string[]>(
  * code shown in the tutorial identical to the code that actually typechecks.
  */
 export function loadRegions(relativePath: string): Record<string, string> {
-  const full = join(process.cwd(), "examples", relativePath)
-  const lines = readFileSync(full, "utf8").split("\n")
+  // Callers pass build-time constants today; the guard keeps that safe by
+  // construction if a dynamic route ever feeds this a request-derived path.
+  const base = join(process.cwd(), "examples")
+  const full = join(base, relativePath)
+  if (!full.startsWith(base + sep)) {
+    throw new Error(`lib/code: path escapes examples/: ${relativePath}`)
+  }
+  return parseRegions(readFileSync(full, "utf8"), `examples/${relativePath}`)
+}
 
+/**
+ * Extract `#region` snippets from source text. Strict by design: duplicate,
+ * mismatched, malformed, or unclosed markers all throw, so a typo'd marker
+ * fails the build instead of silently rendering the wrong snippet.
+ */
+export function parseRegions(source: string, label: string): Record<string, string> {
   const out: Record<string, string> = {}
   const open: { id: string; buf: string[] }[] = []
 
-  for (const line of lines) {
+  for (const line of source.split("\n")) {
     const start = line.match(/^\s*\/\/\s*#region\s+(\S+)\s*$/)
-    const end = line.match(/^\s*\/\/\s*#endregion\s+(\S+)\s*$/)
     if (start) {
+      if (start[1] in out || open.some((r) => r.id === start[1])) {
+        throw new Error(`${label}: duplicate region "${start[1]}"`)
+      }
       open.push({ id: start[1], buf: [] })
       continue
     }
+    const end = line.match(/^\s*\/\/\s*#endregion\s+(\S+)\s*$/)
     if (end) {
       const region = open.pop()
-      if (region) out[region.id] = dedent(region.buf).join("\n").trim()
+      if (!region) {
+        throw new Error(`${label}: #endregion ${end[1]} closes nothing`)
+      }
+      if (region.id !== end[1]) {
+        throw new Error(
+          `${label}: #endregion ${end[1]} closes open region "${region.id}"`
+        )
+      }
+      out[region.id] = dedent(region.buf).join("\n").trim()
       continue
     }
+    // A marker-ish line that matched neither pattern (e.g. a bare
+    // `// #endregion` with no id) would otherwise ship inside the snippet.
+    if (/^\s*\/\/\s*#(region|endregion)\b/.test(line)) {
+      throw new Error(`${label}: malformed region marker: ${line.trim()}`)
+    }
     for (const region of open) region.buf.push(line)
+  }
+
+  if (open.length > 0) {
+    throw new Error(
+      `${label}: unclosed region(s): ${open.map((r) => r.id).join(", ")}`
+    )
   }
 
   return out

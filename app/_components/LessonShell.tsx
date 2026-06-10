@@ -1,10 +1,10 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { Reveal } from "@/app/_components/Reveal"
-import { lessonHref, nextLesson } from "@/lib/lessons"
+import { nextLesson } from "@/lib/catalog"
 
-/* Page chrome shared by every lesson + the reference page, so all three render
-   an identical hero and footer from one source. */
+/* Page chrome shared by every lesson + reference page, so they all render an
+   identical hero and footer from one source. */
 
 /** The hero atop a lesson: back-link, eyebrow, title, intro, optional extras. */
 export function Hero({
@@ -47,7 +47,7 @@ export function LessonNav({ currentSlug }: { currentSlug: string }) {
       <p className="text-sm text-muted">Next question →</p>
       {next.ready ? (
         <Link
-          href={lessonHref(next.slug)}
+          href={next.href}
           className="mt-2 inline-block text-xl font-semibold text-foreground hover:text-cyan transition-colors"
         >
           {label}
