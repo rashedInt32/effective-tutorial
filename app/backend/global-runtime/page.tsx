@@ -2,7 +2,6 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { highlightAll, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
@@ -53,7 +52,7 @@ export default async function Page() {
   })
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
         eyebrow="Backend · Reference"
@@ -197,41 +196,35 @@ export default async function Page() {
       </Section>
 
       {/* Capstone */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Putting it together
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
+      <Section
+        n="Putting it together"
+        title={
+          <>
             <span className="text-gradient">lib/runtime.ts</span>, the module
             everything imports
-          </h2>
-          <p className="mt-4 prose-text">
-            Swap the stub layers for your real ones — a{" "}
-            <Link href="/backend/sql-reference" className="text-cyan hover:underline">
-              SqlClient layer
-            </Link>
-            , a logger, config from env — keep the singleton, and expose one typed{" "}
-            <Code>runEffect</Code> helper so call sites never touch{" "}
-            <Code>ManagedRuntime</Code> directly.
-          </p>
-        </Reveal>
-        <div className="mt-8 space-y-5">
-          <CodeFrame {...snip.capstone} filename="lib/runtime.ts" lang="ts" />
-          <Quote label="That's the whole point">
-            One layer, one runtime, one import. Your services are built once and
-            shared everywhere; every call site is a typed one-liner; and a single{" "}
-            <Code>dispose</Code> shuts the whole thing down cleanly.
-          </Quote>
-        </div>
-      </section>
-
-      {/* Back */}
-      <div className="mt-28 border-t border-border pt-10">
-        <Link href="/" className="text-sm text-cyan hover:underline">
-          ← back to all lessons
-        </Link>
-      </div>
-    </main>
+          </>
+        }
+        after={
+          <div className="mt-8 space-y-5">
+            <CodeFrame {...snip.capstone} filename="lib/runtime.ts" lang="ts" />
+            <Quote label="That's the whole point">
+              One layer, one runtime, one import. Your services are built once and
+              shared everywhere; every call site is a typed one-liner; and a single{" "}
+              <Code>dispose</Code> shuts the whole thing down cleanly.
+            </Quote>
+          </div>
+        }
+      >
+        <p className="prose-text">
+          Swap the stub layers for your real ones — a{" "}
+          <Link href="/backend/sql-reference" className="text-cyan hover:underline">
+            SqlClient layer
+          </Link>
+          , a logger, config from env — keep the singleton, and expose one typed{" "}
+          <Code>runEffect</Code> helper so call sites never touch{" "}
+          <Code>ManagedRuntime</Code> directly.
+        </p>
+      </Section>
+    </>
   )
 }

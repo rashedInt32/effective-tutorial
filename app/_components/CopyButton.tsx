@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function CopyButton({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(timer.current), [])
 
   return (
     <button
@@ -14,7 +17,8 @@ export function CopyButton({ code }: { code: string }) {
         navigator.clipboard.writeText(code).then(
           () => {
             setCopied(true)
-            setTimeout(() => setCopied(false), 1400)
+            clearTimeout(timer.current)
+            timer.current = setTimeout(() => setCopied(false), 1400)
           },
           () => {} // permission denied — leave the label unchanged
         )

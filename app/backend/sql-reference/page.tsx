@@ -2,7 +2,6 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { highlightAll, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
@@ -84,7 +83,7 @@ export default async function Page() {
   })
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
         eyebrow="Backend · Reference"
@@ -282,37 +281,27 @@ export default async function Page() {
       </Section>
 
       {/* Capstone */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Putting it together
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">Migrate, write, read</span> — one effect
-          </h2>
-          <p className="mt-4 prose-text">
-            The pieces composed: run the migrations, insert a row, then read it
-            back through the typed query — a single effect that needs only{" "}
-            <Code>SqlClient</Code>. Provide a driver layer at the edge and it&apos;s
-            runnable.
-          </p>
-        </Reveal>
-        <div className="mt-8 space-y-5">
-          <CodeFrame {...snip.capstone} filename="program.ts" lang="ts" />
-          <Quote label="One requirement, many backends">
-            The whole program&apos;s only dependency is <Code>SqlClient</Code>.
-            Provide Postgres in production and SQLite in tests from the same
-            source — the queries, models, and migrations never change.
-          </Quote>
-        </div>
-      </section>
-
-      {/* Back */}
-      <div className="mt-28 border-t border-border pt-10">
-        <Link href="/" className="text-sm text-cyan hover:underline">
-          ← back to all lessons
-        </Link>
-      </div>
-    </main>
+      <Section
+        n="Putting it together"
+        title={<><span className="text-gradient">Migrate, write, read</span> — one effect</>}
+        after={
+          <div className="mt-8 space-y-5">
+            <CodeFrame {...snip.capstone} filename="program.ts" lang="ts" />
+            <Quote label="One requirement, many backends">
+              The whole program&apos;s only dependency is <Code>SqlClient</Code>.
+              Provide Postgres in production and SQLite in tests from the same
+              source — the queries, models, and migrations never change.
+            </Quote>
+          </div>
+        }
+      >
+        <p className="prose-text">
+          The pieces composed: run the migrations, insert a row, then read it
+          back through the typed query — a single effect that needs only{" "}
+          <Code>SqlClient</Code>. Provide a driver layer at the edge and it&apos;s
+          runnable.
+        </p>
+      </Section>
+    </>
   )
 }

@@ -1,8 +1,6 @@
-import Link from "next/link"
 import type { Metadata } from "next"
 import { highlightAll, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
@@ -107,7 +105,7 @@ export default async function Page() {
   })
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
         eyebrow="Backend · Reference"
@@ -401,48 +399,42 @@ export default async function Page() {
       </Section>
 
       {/* Capstone */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Putting it together
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
+      <Section
+        n="Putting it together"
+        title={
+          <>
             <span className="text-gradient">One small service</span>, every
             piece
-          </h2>
-          <p className="mt-4 prose-text">
-            A tiny secured Todos API that exercises almost everything above at
-            once — schemas and a typed error, a bearer-auth middleware that
-            injects the caller, three endpoints in one secured group, handlers
-            that read the injected account, then the server with its docs route.
-            It&apos;s the whole <Code>declare → implement → serve</Code> arc in
-            one file, and it typechecks.
-          </p>
-        </Reveal>
-        <div className="mt-8 space-y-5">
-          <CodeFrame {...snip.capstone} filename="todos.ts" lang="ts" />
-          <p className="prose-text">
-            And because it&apos;s the same <Code>todosApi</Code> value,
-            consuming it is free — a typed client over HTTP, and an in-memory
-            test that never opens a socket:
-          </p>
-          <CodeFrame {...snip["capstone-consume"]} filename="todos.consume.ts" lang="ts" />
-          <Quote label="That's the whole point">
-            You wrote the contract once. The server, the{" "}
-            <span className="text-cyan">client</span>, the{" "}
-            <span className="text-cyan">docs</span>, and the{" "}
-            <span className="text-cyan">test</span> all fell out of it — and the
-            same schemas keep every one of them honest.
-          </Quote>
-        </div>
-      </section>
-
-      {/* Back */}
-      <div className="mt-28 border-t border-border pt-10">
-        <Link href="/" className="text-sm text-cyan hover:underline">
-          ← back to all lessons
-        </Link>
-      </div>
-    </main>
+          </>
+        }
+        after={
+          <div className="mt-8 space-y-5">
+            <CodeFrame {...snip.capstone} filename="todos.ts" lang="ts" />
+            <p className="prose-text">
+              And because it&apos;s the same <Code>todosApi</Code> value,
+              consuming it is free — a typed client over HTTP, and an in-memory
+              test that never opens a socket:
+            </p>
+            <CodeFrame {...snip["capstone-consume"]} filename="todos.consume.ts" lang="ts" />
+            <Quote label="That's the whole point">
+              You wrote the contract once. The server, the{" "}
+              <span className="text-cyan">client</span>, the{" "}
+              <span className="text-cyan">docs</span>, and the{" "}
+              <span className="text-cyan">test</span> all fell out of it — and the
+              same schemas keep every one of them honest.
+            </Quote>
+          </div>
+        }
+      >
+        <p className="prose-text">
+          A tiny secured Todos API that exercises almost everything above at
+          once — schemas and a typed error, a bearer-auth middleware that
+          injects the caller, three endpoints in one secured group, handlers
+          that read the injected account, then the server with its docs route.
+          It&apos;s the whole <Code>declare → implement → serve</Code> arc in
+          one file, and it typechecks.
+        </p>
+      </Section>
+    </>
   )
 }

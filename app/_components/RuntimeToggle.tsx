@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useId, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { CodeFrame } from "./CodeFrame"
 
@@ -15,8 +15,11 @@ export type RuntimeVariant = {
 
 /** A small toggle that swaps a code card between runtimes (Node ⇄ Bun). */
 export function RuntimeToggle({ variants }: { variants: RuntimeVariant[] }) {
-  const [active, setActive] = useState(variants[0].id)
+  // layoutId is global to the page — scope it so two toggles can coexist.
+  const pillId = useId()
+  const [active, setActive] = useState(variants[0]?.id)
   const current = variants.find((v) => v.id === active) ?? variants[0]
+  if (!current) return null
 
   return (
     <div>
@@ -30,7 +33,7 @@ export function RuntimeToggle({ variants }: { variants: RuntimeVariant[] }) {
           >
             {active === v.id && (
               <motion.span
-                layoutId="runtime-pill"
+                layoutId={pillId}
                 className="absolute inset-0 rounded-full bg-gradient-to-r from-violet/80 to-cyan/70"
                 transition={{ type: "spring", stiffness: 400, damping: 32 }}
               />
@@ -42,7 +45,9 @@ export function RuntimeToggle({ variants }: { variants: RuntimeVariant[] }) {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
+      {/* initial={false}: the server-rendered variant mounts visible (no
+          opacity:0 in the SSR HTML); only later toggles animate. */}
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={current.id}
           initial={{ opacity: 0, y: 8 }}

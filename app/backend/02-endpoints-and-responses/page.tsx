@@ -2,10 +2,10 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { highlight, highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
-import { Reveal } from "@/app/_components/Reveal"
 import { Hero, LessonNav } from "@/app/_components/LessonShell"
 import { ScrollStack, type StackItem } from "@/app/_components/ScrollStack"
 import { Section, Callout, ModuleNote, Code } from "@/app/_components/Prose"
+import { lessonBySlug } from "@/lib/catalog"
 
 export const metadata: Metadata = {
   title: "02 · Endpoints & responses — Effect backend",
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 }
 
 const FILE = "backend/02-endpoints-and-responses.ts"
+const LESSON = lessonBySlug("02-endpoints-and-responses")
 
 export default async function Lesson() {
   // File-backed snippets (shown code === copied code, kept honest by typecheck).
@@ -60,10 +61,10 @@ export default async function Lesson() {
   ]
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
+    <>
       {/* Hero */}
       <Hero
-        eyebrow="Backend · Lesson 02"
+        eyebrow={`Backend · Lesson ${LESSON.n}`}
         title={<>Endpoints <span className="text-gradient">&amp; responses</span></>}
         intro={
           <>
@@ -94,23 +95,20 @@ export default async function Lesson() {
       </Section>
 
       {/* Q2 — JSON three ways (STACK) */}
-      <section className="mt-28">
-        <Reveal>
-          <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
-            Q2 · the same JSON, three ways
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">json, jsonUnsafe, or schemaJson?</span>
-          </h2>
-          <p className="mt-4 prose-text">
-            They differ only in how much safety you want between your value and the
-            wire. Scroll — each option stacks over the last.
-          </p>
-        </Reveal>
-        <div className="mt-10">
-          <ScrollStack items={stack} />
-        </div>
-      </section>
+      <Section
+        n="Q2 · the same JSON, three ways"
+        title={<span className="text-gradient">json, jsonUnsafe, or schemaJson?</span>}
+        after={
+          <div className="mt-10">
+            <ScrollStack items={stack} />
+          </div>
+        }
+      >
+        <p className="prose-text">
+          They differ only in how much safety you want between your value and the
+          wire. Scroll — each option stacks over the last.
+        </p>
+      </Section>
 
       {/* Q3 — status */}
       <Section n="Q3" title="How do I set the status code?">
@@ -176,7 +174,7 @@ export default async function Lesson() {
       </Section>
 
       {/* Next */}
-      <LessonNav currentSlug="02-endpoints-and-responses" />
-    </main>
+      <LessonNav currentSlug={LESSON.slug} />
+    </>
   )
 }

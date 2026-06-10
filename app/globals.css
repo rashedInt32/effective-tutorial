@@ -29,7 +29,6 @@
   --font-mono: var(--font-geist-mono);
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-float: float 9s ease-in-out infinite;
   --animate-gradient: gradient-pan 8s ease infinite;
 }
 
@@ -38,19 +37,22 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50%      { transform: translate3d(0, -28px, 0); }
-}
-
 @keyframes gradient-pan {
   0%, 100% { background-position: 0% 50%; }
   50%      { background-position: 100% 50%; }
 }
 
-html {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
+
+/* Scroll-reveal (Reveal.tsx). Content ships visible in the server HTML; after
+   hydration, blocks still below the fold get .reveal-pending and animate in
+   with .reveal-in when they approach the viewport. */
+.reveal-pending { opacity: 0; }
+.reveal-in { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 body {
   background: var(--background);
@@ -60,7 +62,11 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient gradient glows painted behind everything */
+/* Ambient gradient glows painted behind everything. Static and gradient-only:
+   a blur() filter here, or any animation, would force the compositor to keep
+   re-blurring two 60vw surfaces (and re-sampling every backdrop-filter element
+   above them) on every frame, forever. The soft falloff is baked into the
+   gradient instead. */
 .ambient-glow {
   position: fixed;
   inset: 0;
@@ -75,21 +81,17 @@ body {
   width: 60vw;
   height: 60vw;
   border-radius: 9999px;
-  filter: blur(120px);
-  opacity: 0.35;
+  opacity: 0.3;
 }
 .ambient-glow::before {
   top: -20vw;
   left: -10vw;
-  background: radial-gradient(circle, var(--accent-violet), transparent 60%);
-  animation: var(--animate-float);
+  background: radial-gradient(circle, var(--accent-violet), transparent 70%);
 }
 .ambient-glow::after {
   bottom: -25vw;
   right: -10vw;
-  background: radial-gradient(circle, var(--accent-cyan), transparent 60%);
-  animation: var(--animate-float);
-  animation-delay: -4.5s;
+  background: radial-gradient(circle, var(--accent-cyan), transparent 70%);
 }
 
 /* Gradient text */
@@ -104,7 +106,11 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: var(--animate-gradient);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .text-gradient {
+    animation: var(--animate-gradient);
+  }
 }
 
 /* Glassy card */
