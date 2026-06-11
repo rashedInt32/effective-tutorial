@@ -40,6 +40,20 @@ const lessonData = [
     title: "Schemas: payload, response, errors",
     desc: "Validate input and model failures as data.",
     ready: true
+  },
+  {
+    slug: "04-services-and-layers",
+    n: "04",
+    title: "Services & layers",
+    desc: "Ask for a dependency; build it with a Layer; swap it for tests.",
+    ready: true
+  },
+  {
+    slug: "05-talking-to-a-database",
+    n: "05",
+    title: "Talking to a database",
+    desc: "A safe SQL client, typed queries, and a repository service.",
+    ready: true
   }
 ] as const
 
