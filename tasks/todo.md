@@ -1,25 +1,20 @@
-# Todo — missing topics
+# Todo — Effect-core field guides
 
-Each topic is one vertical slice: `examples/<area>/<slug>.ts` + `app/<area>/<slug>/page.tsx`
-+ `lib/catalog.ts` entry + (field guides) `app/page.tsx` ICONS entry. Done = `pnpm test` +
-`pnpm typecheck` + `pnpm build` green and the page renders in `pnpm dev`.
+Each = one vertical slice: `examples/reference/<slug>.ts` + `app/reference/<slug>/page.tsx`
++ `lib/catalog.ts` entry + `app/page.tsx` ICONS entry. Done = typecheck + test + build green
+and the card renders in `pnpm dev`.
 
-## Phase 1 — Close the learning-path holes
-- [ ] **Task 1 · Lesson 06: Testing your backend** — swap a fake `UserRepo` Layer in a test; drive time with `TestClock`. (deps: 04, 05)
-- [ ] **Task 2 · Guide: Time (DateTime · Duration · Clock)** — S; unblocks the TestClock story. (deps: none)
-- [ ] **Checkpoint A** — guards green; 06 in the next-lesson chain; human review.
+## Phase 1
+- [ ] **Task 1 · `schema`** — Schema: the whole map (Struct, Class, filter, transform, brand, Union)
+- [ ] **Checkpoint A** — guards green; human review of depth
 
-## Phase 2 — Core backend concerns
-- [ ] **Task 3 · Lesson 07: Auth & middleware** — `HttpApiMiddleware` + `HttpApiSecurity`; show the 401 path. Invoke `security-and-hardening` first. (deps: httpapi)
-- [ ] **Task 4 · Lesson 09: Observability** — narrative lesson: `Logger`, `Effect.withSpan`/`Tracer`, `Metric`. (deps: none)
-- [ ] **Checkpoint B** — guards green; auth shows a rejected request; human review.
+## Phase 2
+- [ ] **Task 2 · `coordination`** — Semaphore, Deferred, Latch, Pool
+- [ ] **Task 3 · `pubsub`** — PubSub broadcast (sibling of Queue)
+- [ ] **Checkpoint B** — guards green; human review
 
-## Phase 3 — Performance & background work
-- [ ] **Task 5 · Guide: Cache & batching** — `Cache`/`ScopedCache` + `RequestResolver` (the N+1 fix). (deps: 05)
-- [ ] **Task 6 · Lesson 08: Background work & scheduling** — `FiberSet` + `Cron`; clean Scope shutdown. (deps: schedule, scope)
-- [ ] **Checkpoint C** — all guards green; all new cards reachable from home; final review.
-
-## Decisions (locked in)
-- [x] **Scope:** build all 6 topics across the 3 phases.
-- [x] **Testing tooling:** core `effect/testing` (`TestClock`/`TestConsole`) + plain `vitest`, hand layer-swapping — **no** `@effect/vitest` dep.
-- [x] **Observability:** a full **Lesson 09** (sequential path), not a field guide.
+## Phase 3
+- [ ] **Task 4 · `stm`** — Tx* transactional state (atomic transactions)
+- [ ] **Task 5 · `collections`** — Chunk, HashMap, HashSet
+- [ ] **Task 6 · `random`** — deterministic, testable randomness
+- [ ] **Checkpoint C** — full verify + browser check + PR

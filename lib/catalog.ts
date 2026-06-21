@@ -190,6 +190,42 @@ const fieldGuideData = [
     title: "Cache & batching",
     desc: "Memoize results with a Cache; collapse the N+1 with request batching.",
     ready: true
+  },
+  {
+    slug: "schema",
+    title: "Schema — the whole map",
+    desc: "One value: a type, a decoder, an encoder, a constructor. Structs, checks, transforms, brands, unions.",
+    ready: true
+  },
+  {
+    slug: "coordination",
+    title: "Coordination & limits",
+    desc: "Semaphore, Deferred, Latch, Pool — limit concurrency, hand off a value, gate fibers, share resources.",
+    ready: true
+  },
+  {
+    slug: "pubsub",
+    title: "PubSub",
+    desc: "Broadcast each message to every subscriber — the fan-out sibling of Queue.",
+    ready: true
+  },
+  {
+    slug: "stm",
+    title: "Software Transactional Memory",
+    desc: "Lock-free shared state — read and write transactional values in one atomic, self-retrying Effect.tx.",
+    ready: true
+  },
+  {
+    slug: "collections",
+    title: "Immutable collections",
+    desc: "Persistent Chunk, HashMap, and HashSet — keyed by value, copied cheaply, safe across fibers.",
+    ready: true
+  },
+  {
+    slug: "random",
+    title: "Random",
+    desc: "Randomness as a service — real in production, seedable and reproducible in a test.",
+    ready: true
   }
 ] as const
 
