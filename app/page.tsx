@@ -1,6 +1,8 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import {
+  Archive,
+  Clock,
   Database,
   GitFork,
   Globe,
@@ -47,7 +49,9 @@ const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
   "ref-queue": Inbox,
   scope: PackageOpen,
   config: SlidersHorizontal,
-  schedule: Timer
+  schedule: Timer,
+  time: Clock,
+  cache: Archive
 }
 
 export default function Home() {
