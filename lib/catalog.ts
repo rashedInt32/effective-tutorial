@@ -54,6 +54,34 @@ const lessonData = [
     title: "Talking to a database",
     desc: "A safe SQL client, typed queries, and a repository service.",
     ready: true
+  },
+  {
+    slug: "06-testing-your-backend",
+    n: "06",
+    title: "Testing your backend",
+    desc: "Swap a fake Layer, assert on the Exit, and drive time with TestClock.",
+    ready: true
+  },
+  {
+    slug: "07-auth-and-middleware",
+    n: "07",
+    title: "Auth & middleware",
+    desc: "Read a bearer token, inject the caller, reject with 401 — authorize with 403.",
+    ready: true
+  },
+  {
+    slug: "08-background-work-and-scheduling",
+    n: "08",
+    title: "Background work & scheduling",
+    desc: "Fork off the request path, repeat on a schedule or cron, shut down cleanly.",
+    ready: true
+  },
+  {
+    slug: "09-observability",
+    n: "09",
+    title: "Observability",
+    desc: "Structured logs, traced spans, and metrics — the three pillars, built in.",
+    ready: true
   }
 ] as const
 
@@ -149,6 +177,18 @@ const fieldGuideData = [
     slug: "schedule",
     title: "Schedule",
     desc: "Reusable repetition policies for retry and repeat — backoff, jitter, caps.",
+    ready: true
+  },
+  {
+    slug: "time",
+    title: "Time",
+    desc: "Duration, DateTime, and a Clock you can fake — spans, instants, a testable now.",
+    ready: true
+  },
+  {
+    slug: "cache",
+    title: "Cache & batching",
+    desc: "Memoize results with a Cache; collapse the N+1 with request batching.",
     ready: true
   }
 ] as const
