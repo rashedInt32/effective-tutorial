@@ -2,17 +2,23 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import {
   Archive,
+  ArrowLeftRight,
+  Boxes,
   Clock,
   Database,
+  Dices,
+  Gauge,
   GitFork,
   Globe,
   Inbox,
   Layers,
   type LucideIcon,
   PackageOpen,
+  Radio,
   Server,
   Shapes,
   ShieldAlert,
+  ShieldCheck,
   SlidersHorizontal,
   Timer,
   Waves,
@@ -51,7 +57,13 @@ const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
   config: SlidersHorizontal,
   schedule: Timer,
   time: Clock,
-  cache: Archive
+  cache: Archive,
+  schema: ShieldCheck,
+  coordination: Gauge,
+  pubsub: Radio,
+  stm: ArrowLeftRight,
+  collections: Boxes,
+  random: Dices
 }
 
 export default function Home() {
