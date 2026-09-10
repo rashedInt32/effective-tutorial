@@ -24,11 +24,12 @@ The Effect source repository is cloned to `~/.local/share/effect-solutions/effec
 
 ## Vendored Effect source — the source of truth (pinned to the installed beta)
 
-The Effect v4 source is vendored as a **git submodule** at `repos/effect`, pinned to the **exact installed version** — `effect@4.0.0-beta.78`, from [`Effect-TS/effect-smol`](https://github.com/Effect-TS/effect-smol) (the repo where v4 beta lives; the public `Effect-TS/effect` is still v3).
+The Effect v4 source is vendored as a **git submodule** at `repos/effect`, pinned to the **exact installed version** — `effect@4.0.0-rc.112`, from [`Effect-TS/effect`](https://github.com/Effect-TS/effect) (v4 moved from `effect-smol` into the main repo at the rc line; `effect-smol` tags stop at beta.98).
 
-Prefer this over the `~/.local/share/effect-solutions/effect` clone above: that clone tracks HEAD and has **drifted ahead** of the installed beta (renamed/removed APIs — e.g. `Either`→`Result`, no `Effect.fork`, no `Data.struct`). The submodule matches `node_modules` exactly.
+Prefer this over the `~/.local/share/effect-solutions/effect` clone above: that clone tracks HEAD and may **drift** from the installed release (renamed/removed APIs — e.g. `Schema.TaggedErrorClass`→`Schema.TaggedError`, `Schedule.both`→`Schedule.max`, no `Effect.fork`). The submodule matches `node_modules` exactly.
 
 - Core package source: `repos/effect/packages/effect/src/` (e.g. `Effect.ts`, `Schema.ts`, `Stream.ts`, `unstable/http/`, `unstable/httpapi/`). Grep here for real signatures, JSDoc, and implementations.
 - **Read-only reference** — never edit it, never import from it. It is excluded from typecheck, lint, Next's build, and editor search.
 - After cloning this repo, run `git submodule update --init repos/effect` to populate it.
-- To bump when the installed beta changes: `cd repos/effect && git fetch --tags && git checkout effect@4.0.0-beta.<N> && cd ../.. && git add repos/effect && git commit`.
+- To bump when the installed release changes: `cd repos/effect && git fetch --depth 1 origin tag effect@4.0.0-rc.<N> && git checkout effect@4.0.0-rc.<N> && cd ../.. && git add repos/effect && git commit`.
+- Bumping `effect` itself: `pnpm add effect@<v> @effect/platform-node@<v> @effect/platform-bun@<v>`, then `pnpm typecheck` to surface removed/renamed APIs in `examples/`. Keep `typescript` on 6.x (the `@effect/language-service` `prepare` patch rejects 7.x) and `eslint` on 9.x (eslint-plugin-react, via eslint-config-next, breaks on 10).

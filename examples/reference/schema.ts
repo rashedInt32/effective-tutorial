@@ -65,14 +65,14 @@ export const someId = UserId.make(42) // number & Brand<"UserId">
 
 // #region class
 // `Schema.Class` is one declaration that yields a constructor, a TS type, and an
-// encoder/decoder at once. `TaggedErrorClass` does the same for a failure — a
+// encoder/decoder at once. `TaggedError` does the same for a failure — a
 // `_tag` for matching, plus the data its handler needs.
 export class Point extends Schema.Class<Point>("Point")({
   x: Schema.Number,
   y: Schema.Number
 }) {}
 
-export class NotFound extends Schema.TaggedErrorClass<NotFound>()(
+export class NotFound extends Schema.TaggedError<NotFound>()(
   "NotFound",
   { id: Schema.Number }
 ) {}

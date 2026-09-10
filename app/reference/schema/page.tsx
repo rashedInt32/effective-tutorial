@@ -126,7 +126,7 @@ export default async function Page() {
       <Section n="06" title="Classes & tagged errors">
         <p className="prose-text">
           <Code>Schema.Class</Code> is one declaration that yields a constructor, a
-          TS type, and an encoder/decoder at once. <Code>TaggedErrorClass</Code>{" "}
+          TS type, and an encoder/decoder at once. <Code>TaggedError</Code>{" "}
           does the same for a failure — a <Code>_tag</Code> for matching, plus the
           data its handler needs.
         </p>

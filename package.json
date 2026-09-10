@@ -17,27 +17,27 @@
     }
   },
   "dependencies": {
-    "@effect/platform-bun": "4.0.0-beta.78",
-    "@effect/platform-node": "4.0.0-beta.78",
+    "@effect/platform-bun": "4.0.0-rc.112",
+    "@effect/platform-node": "4.0.0-rc.112",
     "@vercel/analytics": "^2.0.1",
-    "effect": "4.0.0-beta.78",
-    "lucide-react": "^1.17.0",
-    "motion": "^12.40.0",
-    "next": "16.2.7",
+    "effect": "4.0.0-rc.112",
+    "lucide-react": "^1.43.0",
+    "motion": "^13.2.0",
+    "next": "16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "shiki": "^4.2.0"
+    "shiki": "^4.4.3"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.86.2",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^4.1.8"
+    "@effect/language-service": "^0.87.2",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.5.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
   }
 }

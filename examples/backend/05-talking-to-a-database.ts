@@ -40,7 +40,7 @@ export class User extends Schema.Class<User>("User")({
   name: Schema.NonEmptyString
 }) {}
 
-export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()(
   "UserNotFound",
   { id: Schema.Number }
 ) {

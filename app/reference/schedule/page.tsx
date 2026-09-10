@@ -8,7 +8,7 @@ import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Pro
 export const metadata: Metadata = {
   title: "Schedule — Effect reference",
   description:
-    "Reusable repetition policies in Effect: build with recurs/spaced/exponential, compose with jittered/both/andThen, and apply with Effect.retry (on failure) or Effect.repeat (on success)."
+    "Reusable repetition policies in Effect: build with recurs/spaced/exponential, compose with jittered/max/concat, and apply with Effect.retry (on failure) or Effect.repeat (on success)."
 }
 
 const FILE = "reference/schedule.ts"
@@ -57,15 +57,15 @@ export default async function Page() {
       <Section n="02" title="Compose policies">
         <p className="prose-text">
           The power is in composition. <Code>jittered</Code> randomizes delays to
-          avoid thundering herds; <Code>both</Code> continues only while both
-          policies would — the idiomatic way to cap an otherwise unbounded backoff.
+          avoid thundering herds; <Code>max</Code> continues only while every
+          policy would — the idiomatic way to cap an otherwise unbounded backoff.
         </p>
         <CodeFrame {...snip.compose} filename="schedule.ts" lang="ts" />
         <Callout label="And/or/then">
-          <Code>both</Code> is &quot;and&quot; (stop when either stops),{" "}
-          <Code>either</Code> is &quot;or&quot; (stop when both stop), and{" "}
-          <Code>andThen</Code> runs one policy, then switches to another — e.g. a
-          few fast retries, then a slow steady poll.
+          <Code>max</Code> is &quot;and&quot; (stop when any stops, wait for the
+          slowest), <Code>min</Code> is &quot;or&quot; (stop when all stop, wait
+          for the fastest), and <Code>concat</Code> runs one policy, then switches
+          to another — e.g. a few fast retries, then a slow steady poll.
         </Callout>
       </Section>
 
@@ -88,8 +88,8 @@ export default async function Page() {
         <ModuleNote module="Schedule / Effect">
           More builders: <Code>fixed</Code>, <Code>fibonacci</Code>,{" "}
           <Code>cron</Code>, <Code>windowed</Code>. More combinators:{" "}
-          <Code>andThen</Code>, <Code>either</Code>, <Code>addDelay</Code> /{" "}
-          <Code>modifyDelay</Code>, <Code>tap</Code>, <Code>collectOutputs</Code>.
+          <Code>concat</Code>, <Code>min</Code>, <Code>addDelay</Code> /{" "}
+          <Code>modifyDelay</Code>, <Code>tap</Code>, <Code>upTo</Code> / <Code>during</Code>.
           Pair with <Code>retry</Code> / <Code>repeat</Code> — and{" "}
           <Code>retryOrElse</Code> / <Code>repeatOrElse</Code> for a fallback when
           the policy is exhausted.

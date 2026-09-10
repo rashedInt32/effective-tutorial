@@ -71,8 +71,9 @@ export async function highlightRegions<const Ids extends readonly string[]>(
 /**
  * Read a source file under `examples/` and pull out the snippets marked with
  *   // #region <id>   ...   // #endregion <id>
- * Returns a map of id -> dedented code (marker lines removed). This keeps the
- * code shown in the tutorial identical to the code that actually typechecks.
+ * Returns a map of id -> dedented code (marker lines removed), each prefixed
+ * with the imports it uses (see `withImports`). This keeps the code shown in
+ * the tutorial identical to the code that actually typechecks.
  */
 export function loadRegions(relativePath: string): Record<string, string> {
   // Callers pass build-time constants today; the guard keeps that safe by
@@ -82,7 +83,81 @@ export function loadRegions(relativePath: string): Record<string, string> {
   if (!full.startsWith(base + sep)) {
     throw new Error(`lib/code: path escapes examples/: ${relativePath}`)
   }
-  return parseRegions(readFileSync(full, "utf8"), `examples/${relativePath}`)
+  const source = readFileSync(full, "utf8")
+  return withImports(source, parseRegions(source, `examples/${relativePath}`))
+}
+
+/** One parsed top-level `import … from "…"` declaration. */
+type ImportDecl = {
+  module: string
+  typeOnly: boolean
+  namespace?: string
+  defaultName?: string
+  named: { text: string; local: string }[]
+}
+
+// `[^}]*` deliberately spans newlines so multi-line `{ … }` lists parse too.
+const IMPORT_RE =
+  /^import(\s+type)?\s+(?:\*\s+as\s+(\w+)|(\w+)(?:\s*,\s*\{([^}]*)\})?|\{([^}]*)\})\s+from\s+(["'][^"']+["'])\s*;?\s*$/gm
+
+/** Parse every top-level import declaration in a TypeScript source file. */
+export function parseImports(source: string): ImportDecl[] {
+  const out: ImportDecl[] = []
+  for (const m of source.matchAll(IMPORT_RE)) {
+    const [, type, namespace, defaultName, namedAfterDefault, namedOnly, module] = m
+    const named = (namedAfterDefault ?? namedOnly ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .map((text) => {
+        // `a as b` binds b; `type C` binds C.
+        const local = text.split(/\s+as\s+/).pop()!.replace(/^type\s+/, "")
+        return { text, local }
+      })
+    const decl: ImportDecl = { module: module!, typeOnly: type !== undefined, named }
+    if (namespace) decl.namespace = namespace
+    if (defaultName) decl.defaultName = defaultName
+    out.push(decl)
+  }
+  return out
+}
+
+const usesBinding = (code: string, name: string) =>
+  new RegExp(`\\b${name.replace(/[$]/g, "\\$&")}\\b`).test(code)
+
+/**
+ * Prepend to each region the imports it actually uses, so every rendered
+ * snippet is self-contained: `import { Effect } from "effect"` appears above a
+ * region that references `Effect`, and nothing else does. Only the bindings
+ * a region references are kept, so a file-wide `{ Effect, Layer, Schema }`
+ * import narrows to what that snippet needs. Imports live once at the top of
+ * the example file, so the file still typechecks as a single module.
+ */
+export function withImports(
+  source: string,
+  regions: Record<string, string>
+): Record<string, string> {
+  const decls = parseImports(source)
+  const out: Record<string, string> = {}
+  for (const [id, code] of Object.entries(regions)) {
+    const lines: string[] = []
+    for (const decl of decls) {
+      const type = decl.typeOnly ? "type " : ""
+      if (decl.namespace) {
+        if (usesBinding(code, decl.namespace)) {
+          lines.push(`import ${type}* as ${decl.namespace} from ${decl.module}`)
+        }
+        continue
+      }
+      const def = decl.defaultName && usesBinding(code, decl.defaultName) ? decl.defaultName : undefined
+      const named = decl.named.filter((n) => usesBinding(code, n.local)).map((n) => n.text)
+      if (!def && named.length === 0) continue
+      const parts = [def, named.length > 0 ? `{ ${named.join(", ")} }` : undefined].filter(Boolean)
+      lines.push(`import ${type}${parts.join(", ")} from ${decl.module}`)
+    }
+    out[id] = lines.length > 0 ? `${lines.join("\n")}\n\n${code}` : code
+  }
+  return out
 }
 
 /**

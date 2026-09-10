@@ -9,7 +9,7 @@ the highest-value gaps, each as the repo's standard **vertical slice**: a typech
 `app/reference/<slug>/page.tsx` → a `lib/catalog.ts` field-guide entry → an `ICONS` entry
 in `app/page.tsx`. Guarded by `lib/catalog.test.ts` + `tsc` + `next build`.
 
-All APIs verified against the installed `effect@4.0.0-beta.78` (and `repos/effect`), never
+All APIs verified against the installed `effect@4.0.0-rc.112` (and `repos/effect`), never
 the drifted `~/.local/share` clone.
 
 ## Topics (priority order)

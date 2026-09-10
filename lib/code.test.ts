@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { loadRegions, parseRegions } from "./code"
+import { loadRegions, parseImports, parseRegions, withImports } from "./code"
 
 const lines = (...ls: string[]) => ls.join("\n")
 
@@ -81,13 +81,113 @@ describe("parseRegions", () => {
   })
 })
 
+describe("parseImports", () => {
+  it("parses named, aliased, type, default and namespace imports", () => {
+    const src = lines(
+      'import { Effect, Layer as L, type Scope } from "effect"',
+      "import {",
+      "  HttpRouter,",
+      "  HttpServerResponse",
+      '} from "effect/unstable/http"',
+      'import type { Metadata } from "next"',
+      'import Link from "next/link"',
+      'import * as Fs from "node:fs"',
+      "const x = 1"
+    )
+    expect(parseImports(src)).toEqual([
+      {
+        module: '"effect"',
+        typeOnly: false,
+        named: [
+          { text: "Effect", local: "Effect" },
+          { text: "Layer as L", local: "L" },
+          { text: "type Scope", local: "Scope" }
+        ]
+      },
+      {
+        module: '"effect/unstable/http"',
+        typeOnly: false,
+        named: [
+          { text: "HttpRouter", local: "HttpRouter" },
+          { text: "HttpServerResponse", local: "HttpServerResponse" }
+        ]
+      },
+      { module: '"next"', typeOnly: true, named: [{ text: "Metadata", local: "Metadata" }] },
+      { module: '"next/link"', typeOnly: false, defaultName: "Link", named: [] },
+      { module: '"node:fs"', typeOnly: false, namespace: "Fs", named: [] }
+    ])
+  })
+})
+
+describe("withImports", () => {
+  const src = lines(
+    'import { Effect, Layer, Schema } from "effect"',
+    'import { HttpRouter } from "effect/unstable/http"',
+    'import * as Fs from "node:fs"',
+    "// #region a",
+    "const a = Effect.succeed(1)",
+    "// #endregion a",
+    "// #region b",
+    "const b = Layer.succeed(Fs.readFileSync)",
+    "// #endregion b",
+    "// #region c",
+    "const c = 3",
+    "// #endregion c"
+  )
+
+  it("prepends only the imports each region references", () => {
+    const out = withImports(src, parseRegions(src, "t.ts"))
+    expect(out.a).toBe(lines('import { Effect } from "effect"', "", "const a = Effect.succeed(1)"))
+    expect(out.b).toBe(
+      lines(
+        'import { Layer } from "effect"',
+        'import * as Fs from "node:fs"',
+        "",
+        "const b = Layer.succeed(Fs.readFileSync)"
+      )
+    )
+  })
+
+  it("leaves a region untouched when it uses no imports", () => {
+    expect(withImports(src, parseRegions(src, "t.ts")).c).toBe("const c = 3")
+  })
+
+  it("matches whole identifiers only", () => {
+    const s = lines('import { Ref } from "effect"', "// #region r", "const Refs = 1", "// #endregion r")
+    expect(withImports(s, parseRegions(s, "t.ts")).r).toBe("const Refs = 1")
+  })
+
+  it("keeps aliases and type modifiers as written", () => {
+    const s = lines(
+      'import { Layer as L, type Scope } from "effect"',
+      'import type { Metadata } from "next"',
+      "// #region r",
+      "declare const s: Scope",
+      "declare const m: Metadata",
+      "// #endregion r"
+    )
+    expect(withImports(s, parseRegions(s, "t.ts")).r).toBe(
+      lines(
+        'import { type Scope } from "effect"',
+        'import type { Metadata } from "next"',
+        "",
+        "declare const s: Scope",
+        "declare const m: Metadata"
+      )
+    )
+  })
+})
+
 describe("loadRegions", () => {
   it("rejects paths that escape examples/", () => {
     expect(() => loadRegions("../package.json")).toThrow(/escapes examples\//)
   })
 
-  it("reads a real example file", () => {
+  it("reads a real example file and prefixes regions with their imports", () => {
     const regions = loadRegions("backend/01-create-and-run-server.ts")
     expect(Object.keys(regions).length).toBeGreaterThan(0)
+    for (const code of Object.values(regions)) {
+      if (/\bEffect\./.test(code)) expect(code).toMatch(/^import \{[^}]*\bEffect\b[^}]*\} from "effect"/m)
+    }
   })
 })

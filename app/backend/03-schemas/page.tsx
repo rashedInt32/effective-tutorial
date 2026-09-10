@@ -180,7 +180,7 @@ export default async function Lesson() {
       {/* Q5 — model errors */}
       <Section n="Q5" title="How do I model my own failures?">
         <p className="prose-text">
-          Domain errors are schemas too — <Code>TaggedErrorClass</Code> gives each
+          Domain errors are schemas too — <Code>TaggedError</Code> gives each
           one a <Code>_tag</Code>, typed fields, and serializability. List them in
           a function&apos;s error channel and the compiler tracks every one.
         </p>

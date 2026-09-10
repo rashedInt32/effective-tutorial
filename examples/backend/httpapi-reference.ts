@@ -32,7 +32,7 @@ export class User extends Schema.Class<User>("User")({
 
 // ...and a tagged error. `httpApiStatus` makes it render as 404 on the wire and
 // lets you list it directly as an endpoint `error`.
-export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()(
   "UserNotFound",
   { id: Schema.String },
   { httpApiStatus: 404 }
@@ -347,7 +347,7 @@ class Todo extends Schema.Class<Todo>("Todo")({
   done: Schema.Boolean
 }) {}
 
-class TodoNotFound extends Schema.TaggedErrorClass<TodoNotFound>()(
+class TodoNotFound extends Schema.TaggedError<TodoNotFound>()(
   "TodoNotFound",
   { id: Schema.String },
   { httpApiStatus: 404 }
