@@ -188,7 +188,7 @@ export const WhoAmI = HttpRouter.add(
 // #region errors
 // An error can render ITSELF: implement the Respondable symbol and the router
 // turns a failure into your response automatically — no catch in the handler.
-export class TodoNotFound extends Schema.TaggedErrorClass<TodoNotFound>()("TodoNotFound", {
+export class TodoNotFound extends Schema.TaggedError<TodoNotFound>()("TodoNotFound", {
   id: Schema.String
 }) {
   [HttpServerRespondable.symbol]() {
@@ -267,7 +267,7 @@ class Note extends Schema.Class<Note>("Note")({
   text: Schema.String
 }) {}
 
-class NoteNotFound extends Schema.TaggedErrorClass<NoteNotFound>()("NoteNotFound", {
+class NoteNotFound extends Schema.TaggedError<NoteNotFound>()("NoteNotFound", {
   id: Schema.Number
 }) {
   [HttpServerRespondable.symbol]() {

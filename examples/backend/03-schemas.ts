@@ -93,12 +93,12 @@ export const createUserSafe = createUser.pipe(
 // #region errors
 // Your domain failures are schemas too: serializable, tagged, and pattern-
 // matchable. The `_tag` drives the match; each carries the data its caller needs.
-export class EmailTaken extends Schema.TaggedErrorClass<EmailTaken>()(
+export class EmailTaken extends Schema.TaggedError<EmailTaken>()(
   "EmailTaken",
   { email: Schema.String }
 ) {}
 
-export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()(
   "UserNotFound",
   { id: Schema.Number }
 ) {}

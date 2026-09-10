@@ -12,13 +12,13 @@ const backoff = Schedule.exponential(Duration.millis(100)) // 100ms, 200, 400, .
 // #endregion build
 
 // #region compose
-// Policies compose. `jittered` spreads delays to avoid thundering herds; `both`
-// keeps going only while BOTH policies would — the usual way to CAP an unbounded
-// policy at N attempts.
-const cappedBackoff = backoff.pipe(
-  Schedule.jittered,
-  Schedule.both(upTo5)
-) // exponential + jitter, but at most 5 retries
+// Policies compose. `jittered` spreads delays to avoid thundering herds; `max`
+// keeps going only while ALL policies would (waiting for the slowest) — the
+// usual way to CAP an unbounded policy at N attempts.
+const cappedBackoff = Schedule.max([
+  backoff.pipe(Schedule.jittered),
+  upTo5
+]) // exponential + jitter, but at most 5 retries
 // #endregion compose
 
 // #region apply
