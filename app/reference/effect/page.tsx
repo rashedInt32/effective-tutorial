@@ -18,6 +18,7 @@ export default async function Page() {
     "create",
     "sequence",
     "transform",
+    "fn",
     "run"
   ])
 
@@ -92,8 +93,30 @@ export default async function Page() {
         <CodeFrame {...snip.transform} filename="transform.ts" lang="ts" />
       </Section>
 
+      {/* fn */}
+      <Section n="04" title="fn — a named, traced function">
+        <p className="prose-text">
+          <Code>Effect.fn</Code> defines a function whose body is a generator, and{" "}
+          <em>names</em> it. That name is not decoration: it becomes a real tracing
+          span around every call, and it labels the frame in a stack trace — so a
+          failure points at <Code>loadUser</Code> rather than an anonymous
+          function.
+        </p>
+        <CodeFrame {...snip.fn} filename="fn.ts" lang="ts" />
+        <Callout label="Tracing you get for free">
+          This is the cheapest observability in the library: name the function and
+          the span appears in your traces.{" "}
+          <Link href="/backend/09-observability" className="text-cyan hover:underline">
+            Lesson 09
+          </Link>{" "}
+          picks the thread up — <Code>withSpan</Code> does the same for an effect
+          you already have. Use <Code>fnUntraced</Code> on a hot path where you
+          don&apos;t want the span.
+        </Callout>
+      </Section>
+
       {/* Run */}
-      <Section n="04" title="Run — at the edge of the app">
+      <Section n="05" title="Run — at the edge of the app">
         <p className="prose-text">
           A description does nothing until a runner executes it — so you run{" "}
           <em>once</em>, as late as possible. <Code>runSync</Code> for synchronous
