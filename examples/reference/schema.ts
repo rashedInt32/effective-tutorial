@@ -17,7 +17,7 @@ export const Person = Schema.Struct({
   tags: Schema.Array(Schema.String)
 })
 
-export type Person = Schema.Schema.Type<typeof Person>
+export type Person = typeof Person.Type
 // { readonly name: string; readonly age: number; readonly nickname?: string; readonly tags: readonly string[] }
 // #endregion struct
 
@@ -41,26 +41,31 @@ export const Username = Schema.String.check(Schema.isMinLength(3), Schema.isMaxL
 // #endregion check
 
 // #region transform
-// Encoded and decoded can be DIFFERENT shapes. `decodeTo` bridges them with a
-// pair of getters: `decode` maps the source into the target on the way in,
-// `encode` reverses it on the way out. Here the wire carries a string; your code
-// gets a number — and encoding gives the string back.
+// Encoded and decoded can be DIFFERENT shapes. Most conversions already exist —
+// `Schema.FiniteFromString` is the built-in string <-> number codec, and it
+// REJECTS "abc" instead of decoding it to NaN.
+export const Amount = Schema.FiniteFromString
+// Schema.decodeUnknownSync(Amount)("42") -> 42 (a number); "abc" fails
+
+// Rolling your own: `decodeTo` bridges the two sides with a pair of getters —
+// `decode` maps the source in, `encode` reverses it out. Prefer the built-in
+// `SchemaGetter` conversions over a hand-written `Number(...)`, which would let
+// NaN through.
 export const NumberFromString = Schema.String.pipe(
   Schema.decodeTo(Schema.Number, {
-    decode: SchemaGetter.transform((s: string) => Number(s)),
-    encode: SchemaGetter.transform((n: number) => String(n))
+    decode: SchemaGetter.Number(),
+    encode: SchemaGetter.String()
   })
 )
-// Schema.decodeUnknownSync(NumberFromString)("42") -> 42 (a number)
 // #endregion transform
 
 // #region brand
 // Two `string`s with the same shape can still mean different things. `brand`
 // makes a nominal type: a `UserId` is no longer assignable from a plain string,
 // so you can't pass an order id where a user id is wanted. `.make` builds one.
-export const UserId = Schema.Number.pipe(Schema.brand("UserId"))
-export type UserId = Schema.Schema.Type<typeof UserId>
-export const someId = UserId.make(42) // number & Brand<"UserId">
+export const UserId = Schema.String.pipe(Schema.brand("UserId"))
+export type UserId = typeof UserId.Type
+export const someId = UserId.make("u_42") // string & Brand<"UserId">
 // #endregion brand
 
 // #region class

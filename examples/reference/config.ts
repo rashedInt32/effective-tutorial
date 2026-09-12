@@ -15,13 +15,11 @@ const apiKey = Config.redacted("API_KEY") // Config<Redacted<string>>
 
 // #region compose
 // `Config.all` combines several configs into one structured value; `nested`
-// scopes a group under a prefix (so this reads DB_HOST, DB_PORT, ...).
+// scopes a WHOLE shape under a prefix — the same ServerConfig, read from
+// DB_HOST and DB_PORT instead of HOST and PORT.
 const ServerConfig = Config.all({ host, port })
 
-export const DbConfig = Config.all({
-  host: Config.string("HOST"),
-  port: Config.port("PORT")
-}).pipe(Config.nested("DB"))
+export const DbConfig = ServerConfig.pipe(Config.nested("DB"))
 // #endregion compose
 
 // #region read

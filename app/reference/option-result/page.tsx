@@ -5,7 +5,7 @@ import { Hero } from "@/app/_components/LessonShell"
 import { Section, Callout, ModuleNote, Quote, Code } from "@/app/_components/Prose"
 
 export const metadata: Metadata = {
-  title: "Option & Either (Result) — Effect reference",
+  title: "Option & Result — Effect reference",
   description:
     "Option models an absent value; Result (Effect v4's Either) models success or a typed failure. The few combinators you reach for, and how they interop with Effect."
 }

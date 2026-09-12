@@ -106,7 +106,7 @@ export default function Home() {
 
       {/* Whole-map references */}
       <Group
-        kicker="Field guides"
+        kicker="Backend reference"
         title="The whole map"
         blurb="One dense page per module — every option you reach for, on the table at once."
       >

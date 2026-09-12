@@ -24,8 +24,8 @@ export default async function Page() {
         intro={
           <>
             Effect ships persistent, immutable collections: every operation returns
-            a <em>new</em> value and shares structure with the old one, so
-            they&apos;re safe to hold across fibers and cheap to copy.{" "}
+            a <em>new</em> value and shares structure with the old one, so updates
+            are cheap and every old version stays valid.{" "}
             <Code>Chunk</Code> is an array, <Code>HashMap</Code> a dictionary,{" "}
             <Code>HashSet</Code> a set — keyed by value equality.
           </>
@@ -48,13 +48,19 @@ export default async function Page() {
           returns a new chunk.
         </p>
         <CodeFrame {...snip.chunk} filename="collections.ts" lang="ts" />
+        <Callout label="When not to reach for Chunk">
+          Default to plain arrays and the <Code>Array</Code> module. Pick{" "}
+          <Code>Chunk</Code> when you append or concatenate in a loop — that is
+          what it is built for.
+        </Callout>
       </Section>
 
       {/* HashMap */}
       <Section n="02" title="HashMap — keyed by value">
         <p className="prose-text">
           <Code>HashMap</Code> is a dictionary keyed by <strong>value</strong>{" "}
-          equality, not reference — so structural keys work. <Code>get</Code>{" "}
+          equality, not reference — so structural keys work: in v4 plain objects
+          compare by their contents, with no wrapper needed. <Code>get</Code>{" "}
           returns an{" "}
           <Link href="/reference/option-result" className="text-cyan hover:underline">
             Option
@@ -81,11 +87,13 @@ export default async function Page() {
         </p>
         <CodeFrame {...snip.hashset} filename="collections.ts" lang="ts" />
         <ModuleNote module="Effect collections">
-          The same family includes <Code>Array</Code> and <Code>Record</Code>{" "}
-          (utilities over the plain JS types), plus <Code>SortedMap</Code>,{" "}
-          <Code>SortedSet</Code>, and <Code>List</Code> — all built on{" "}
-          <Code>Equal</Code> and <Code>Hash</Code>, so custom values compare by
-          their contents.
+          The same family includes <Code>Array</Code>, <Code>Record</Code>,{" "}
+          <Code>Iterable</Code>, <Code>Struct</Code>, and <Code>Tuple</Code>{" "}
+          (utilities over plain JS values), <Code>MutableHashMap</Code> /{" "}
+          <Code>MutableHashSet</Code> / <Code>MutableList</Code> for local
+          single-fiber mutation, and <Code>Trie</Code> for prefix lookups. The
+          immutable ones are built on <Code>Equal</Code> and <Code>Hash</Code>, so
+          values compare by their contents.
         </ModuleNote>
       </Section>
     </>

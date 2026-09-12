@@ -57,8 +57,10 @@ export default async function Page() {
       <Section n="02" title="Compose policies">
         <p className="prose-text">
           The power is in composition. <Code>jittered</Code> randomizes delays to
-          avoid thundering herds; <Code>max</Code> continues only while every
-          policy would — the idiomatic way to cap an otherwise unbounded backoff.
+          avoid thundering herds — it scales each delay by a random 0.8–1.2×.{" "}
+          <Code>max</Code> continues only while every policy would, which is the
+          idiomatic way to cap an otherwise unbounded backoff. (<Code>exponential</Code>{" "}
+          doubles by default; pass a <Code>factor</Code> to change that.)
         </p>
         <CodeFrame {...snip.compose} filename="schedule.ts" lang="ts" />
         <Callout label="And/or/then">
@@ -77,6 +79,12 @@ export default async function Page() {
           <Code>repeat</Code> re-runs it while it keeps <em>succeeding</em>.
         </p>
         <CodeFrame {...snip.apply} filename="schedule.ts" lang="ts" />
+        <Callout label="You don't always need a Schedule">
+          For a one-off, <Code>retry</Code> takes options directly:{" "}
+          <Code>Effect.retry(flaky, {"{ times: 3 }"})</Code>, or{" "}
+          <Code>{"{ while: (e) => e._tag === \"Timeout\" }"}</Code> to retry only
+          certain failures.
+        </Callout>
         <Quote label="One policy, both directions">
           This is the same <Code>retry</Code> the{" "}
           <Link href="/reference/errors" className="text-cyan hover:underline">

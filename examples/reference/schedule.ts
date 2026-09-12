@@ -6,7 +6,7 @@ import { Duration, Effect, Schedule } from "effect"
 
 // #region build
 // The building blocks: a fixed count, a constant gap, or growing backoff.
-const upTo5 = Schedule.recurs(5) //                          at most 5 more times
+const upTo5 = Schedule.recurs(5) //          5 retries after the first: 6 runs max
 const everySecond = Schedule.spaced(Duration.seconds(1)) //  1s between runs
 const backoff = Schedule.exponential(Duration.millis(100)) // 100ms, 200, 400, ...
 // #endregion build

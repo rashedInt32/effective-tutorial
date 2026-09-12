@@ -55,10 +55,14 @@ export default async function Page() {
           Build up from primitives. <Code>Struct</Code> combines fields,{" "}
           <Code>optionalKey</Code> makes one optional, <Code>Array</Code> nests.
           The schema is also the source of the static type — read it back with{" "}
-          <Code>Schema.Schema.Type</Code>, so the type follows the validator
+          <Code>typeof Person.Type</Code>, so the type follows the validator
           automatically.
         </p>
         <CodeFrame {...snip.struct} filename="schema.ts" lang="ts" />
+        <Callout label="optionalKey vs optional">
+          <Code>optionalKey</Code> lets the key be <em>missing</em>;{" "}
+          <Code>optional</Code> also accepts an explicit <Code>undefined</Code>.
+        </Callout>
       </Section>
 
       {/* Decode */}
@@ -82,8 +86,8 @@ export default async function Page() {
       <Section n="03" title="Add runtime checks">
         <p className="prose-text">
           A <Code>.check(...)</Code> attaches a constraint without changing the
-          type — the value still has to pass to decode. Constructors are{" "}
-          <Code>Schema.is*</Code>; compose several and all must hold. Meaning lives
+          type — the value still has to pass to decode. The built-in checks are the{" "}
+          <Code>Schema.is*</Code> functions; pass several and all must hold. Meaning lives
           in the schema, not in scattered <Code>if</Code> guards.
         </p>
         <CodeFrame {...snip.check} filename="schema.ts" lang="ts" />
@@ -91,17 +95,25 @@ export default async function Page() {
           A deep catalog of checks: <Code>isMinLength</Code>,{" "}
           <Code>isPattern</Code>, <Code>isGreaterThan</Code>, <Code>isBetween</Code>,{" "}
           <Code>isUUID</Code>, <Code>isInt</Code>. Each takes optional annotations
-          (including a custom <Code>message</Code>) for the failure.
+          (including a custom <Code>message</Code>) for the failure. For parsing
+          there is also <Code>decodeUnknownResult</Code> (a <Code>Result</Code>),{" "}
+          <Code>decodeUnknownOption</Code>, and the guards <Code>Schema.is</Code> /{" "}
+          <Code>Schema.asserts</Code>. <Code>typeof Person.Encoded</Code> is the
+          wire-side type.
         </ModuleNote>
       </Section>
 
       {/* Transform */}
       <Section n="04" title="Transform between shapes">
         <p className="prose-text">
-          The encoded and decoded shapes can differ. <Code>decodeTo</Code> bridges
-          them with a pair of getters: <Code>decode</Code> maps the source in,{" "}
-          <Code>encode</Code> reverses it out. The wire carries a string; your code
-          works with a number — losslessly, both ways.
+          The encoded and decoded shapes can differ. Most conversions already
+          exist — <Code>Schema.FiniteFromString</Code> is the built-in string ↔
+          number codec. Rolling your own, <Code>decodeTo</Code> bridges the sides
+          with a pair of getters: <Code>decode</Code> maps the source in,{" "}
+          <Code>encode</Code> reverses it out. Use the ready-made{" "}
+          <Code>SchemaGetter</Code> conversions rather than a hand-written{" "}
+          <Code>Number(...)</Code>, so a non-numeric string <em>fails</em> instead
+          of decoding to <Code>NaN</Code>.
         </p>
         <CodeFrame {...snip.transform} filename="schema.ts" lang="ts" />
         <Quote label="Parse, don't validate">

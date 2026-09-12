@@ -22,7 +22,8 @@ export const broadcast = Effect.gen(function* () {
       const left = yield* PubSub.subscribe(pubsub)
       const right = yield* PubSub.subscribe(pubsub)
 
-      // Each subscriber drains its OWN queue — both see all three values.
+      // Each subscriber drains its OWN queue. `takeAll` waits for one message
+      // then drains what's queued — `publishAll` lands all three at once.
       const a = yield* Effect.forkChild(PubSub.takeAll(left))
       const b = yield* Effect.forkChild(PubSub.takeAll(right))
 

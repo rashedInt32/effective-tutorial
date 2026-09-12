@@ -33,12 +33,12 @@ export const year = DateTime.toParts(later).year // 2026
 // service is swappable. `Clock.currentTimeMillis` is itself an Effect; in
 // production it reads the wall clock, under `TestClock` it reads the time you
 // set — so the SAME code is deterministic in a test. `Date.now()` can't be.
+const doWork = Effect.void
+
 export const elapsed = Effect.gen(function* () {
   const start = yield* Clock.currentTimeMillis
   yield* doWork
   const end = yield* Clock.currentTimeMillis
   return end - start
 })
-
-const doWork = Effect.void
 // #endregion clock

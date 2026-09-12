@@ -215,7 +215,7 @@ export default async function Page() {
           <Code>schemaParams</Code> for typed values — the router provides the
           param context automatically, so neither leaks into your requirements. The
           last route in this snippet uses <Code>*</Code> for any method and{" "}
-          <Code>/*</Code> for any path: a catch-all that runs when nothing else
+          <Code>{"/*"}</Code> for any path: a catch-all that runs when nothing else
           matches.
         </p>
         <CodeFrame {...snip.params} filename="params.ts" lang="ts" />

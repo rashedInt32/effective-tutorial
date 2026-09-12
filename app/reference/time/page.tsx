@@ -67,6 +67,13 @@ export default async function Page() {
           nothing mutates.
         </p>
         <CodeFrame {...snip.datetime} filename="time.ts" lang="ts" />
+        <ModuleNote module="DateTime">
+          <Code>DateTime.make</Code> is the safe twin of <Code>makeUnsafe</Code> —
+          it returns an <Code>Option</Code> instead of throwing.{" "}
+          <Code>setZone</Code> gives you a zoned value; <Code>distance</Code>,{" "}
+          <Code>isPast</Code> / <Code>isFuture</Code>, and{" "}
+          <Code>toEpochMillis</Code> read one back.
+        </ModuleNote>
         <Callout label="Immutable, like everything else">
           <Code>DateTime.add</Code> doesn&apos;t change its input — it returns a
           fresh instant. Time math is just value transformation, so it composes
@@ -89,8 +96,10 @@ export default async function Page() {
           <Link href="/backend/06-testing-your-backend" className="text-cyan hover:underline">
             TestClock
           </Link>{" "}
-          in a test — advance it and timeouts, retries, and schedules fire with no
-          real waiting.
+          in a test. It lives in <Code>effect/testing</Code>:{" "}
+          <Code>TestClock.adjust(&quot;5 seconds&quot;)</Code> moves it, and
+          timeouts, retries, and schedules fire with no real waiting.{" "}
+          <Code>Effect.sleep</Code> is its most common consumer.
         </Quote>
       </Section>
     </>

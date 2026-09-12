@@ -49,6 +49,11 @@ export default async function Page() {
           subscribers attach later.
         </p>
         <CodeFrame {...snip.create} filename="pubsub.ts" lang="ts" />
+        <Callout label="Late subscribers miss the past">
+          A subscription only sees what is published after it attaches. Pass{" "}
+          <Code>{"{ capacity: 16, replay: 10 }"}</Code> and each new subscriber
+          first receives the last ten messages.
+        </Callout>
       </Section>
 
       {/* Broadcast */}

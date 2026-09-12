@@ -9,8 +9,9 @@ import { Cache, Effect, Exit, Request, RequestResolver } from "effect"
 // #region cache
 // `Cache.make` wraps a `lookup` (any `key -> Effect`) with memoization: a hit
 // returns the stored value, a miss runs the lookup once and stores it, and
-// concurrent misses for the SAME key share one in-flight lookup. `capacity`
-// bounds entries (LRU), `timeToLive` expires them. `make` is itself an Effect.
+// concurrent misses for the SAME key share one in-flight lookup. `capacity` is
+// required and bounds entries (oldest-inserted evicted first — a hit does NOT
+// move an entry to the back), `timeToLive` expires them. `make` is an Effect.
 export const userCache = Effect.gen(function* () {
   const cache = yield* Cache.make({
     capacity: 1000,
@@ -28,11 +29,12 @@ const fetchUser = (id: number) => Effect.succeed({ id, name: `User ${id}` })
 
 // #region refresh
 // Stale beats slow — but only briefly. `refresh` recomputes a key WITHOUT
-// evicting it, so readers keep getting the old value until the new one lands.
+// evicting it, so other readers keep getting the old value until the new one
+// lands. The CALLER of refresh waits for it — fork for fire-and-forget.
 // `invalidate` drops an entry so the next read recomputes. Both are Effects.
 export const keepFresh = (cache: Cache.Cache<number, { id: number; name: string }>) =>
   Effect.gen(function* () {
-    yield* Cache.refresh(cache, 1) // recompute 1 in the background; no gap for readers
+    yield* Cache.refresh(cache, 1) // recompute now; readers keep the old value until it lands
     yield* Cache.invalidate(cache, 2) // force the next get(2) to miss
   })
 // #endregion refresh
