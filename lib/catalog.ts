@@ -269,7 +269,7 @@ const frontendData = [
     n: "14",
     title: "Rendering in Next.js",
     desc: "Server-render the first paint, then hand the same atoms to the client.",
-    ready: false
+    ready: true
   }
 ] as const
 
