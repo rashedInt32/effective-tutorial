@@ -43,7 +43,9 @@ export default async function Page() {
         <p className="prose-text">
           <Code>Effect.all</Code> runs a collection and collects the results;{" "}
           <Code>Effect.forEach</Code> maps over items effectfully. The{" "}
-          <Code>concurrency</Code> option decides the width.
+          <Code>concurrency</Code> option decides the width. <Code>all</Code> also
+          takes an object of effects and returns an object; pass{" "}
+          <Code>discard: true</Code> when you only want the side effects.
         </p>
         <CodeFrame {...snip.all} filename="concurrency.ts" lang="ts" />
         <Callout label="The concurrency knob">
@@ -56,9 +58,11 @@ export default async function Page() {
       {/* Race / timeout */}
       <Section n="02" title="Race & timeout">
         <p className="prose-text">
-          <Code>race</Code> returns whichever effect finishes first and interrupts
-          the loser; <Code>timeout</Code> gives up after a <Code>Duration</Code>,
-          adding a <Code>TimeoutError</Code> to the error channel.
+          <Code>race</Code> returns the first effect to <em>succeed</em> and
+          interrupts the other — a quick failure doesn&apos;t win. Reach for{" "}
+          <Code>raceFirst</Code> when the first to finish should decide either way.{" "}
+          <Code>timeout</Code> gives up after a <Code>Duration</Code>, adding a{" "}
+          <Code>Cause.TimeoutError</Code> to the error channel.
         </p>
         <CodeFrame {...snip["race-timeout"]} filename="concurrency.ts" lang="ts" />
         <Callout label="Losing means stopping">
@@ -76,7 +80,7 @@ export default async function Page() {
           <Code>Fiber.interrupt</Code> cancels it.
         </p>
         <CodeFrame {...snip.fork} filename="concurrency.ts" lang="ts" />
-        <Quote label="A v4 rename">
+        <Quote label="No plain fork in v4">
           There is no plain <Code>Effect.fork</Code> in v4. Use{" "}
           <Code>forkChild</Code> (tied to the current fiber) or{" "}
           <Code>forkScoped</Code> (tied to a <Code>Scope</Code>) — both interrupt the
@@ -85,7 +89,8 @@ export default async function Page() {
         </Quote>
         <ModuleNote module="Effect / Fiber">
           More: <Code>forkScoped</Code> / <Code>forkIn</Code> /{" "}
-          <Code>forkDetach</Code> (different lifetimes), <Code>raceAll</Code>,{" "}
+          <Code>forkDetach</Code> (different lifetimes), <Code>raceFirst</Code> /{" "}
+          <Code>raceAll</Code>,{" "}
           <Code>timeoutOption</Code>, <Code>Effect.sleep</Code>, and{" "}
           <Code>Fiber.joinAll</Code> / <Code>interrupt</Code>. The{" "}
           <Link href="/reference/effect" className="text-cyan hover:underline">

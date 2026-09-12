@@ -20,15 +20,16 @@ export const everyone = Effect.forEach([1, 2, 3], fetchUser, {
 // #endregion all
 
 // #region race-timeout
-// `race` returns whichever effect wins — the loser is interrupted. `timeout`
-// gives up after a Duration, failing with a TimeoutError.
+// `race` returns the first effect to SUCCEED and interrupts the other — a quick
+// failure doesn't win. (`raceFirst` lets the first to finish decide, either way.)
+// `timeout` gives up after a Duration, failing with a Cause.TimeoutError.
 export const winner = Effect.race(
   fetchUser(1).pipe(Effect.delay(Duration.millis(50))),
   fetchUser(2).pipe(Effect.delay(Duration.millis(10)))
 ) // Effect<{ id; name }>
 
 export const bounded = fetchUser(1).pipe(Effect.timeout(Duration.seconds(2)))
-// Effect<{ id; name }, TimeoutError>
+// Effect<{ id; name }, Cause.TimeoutError>
 // #endregion race-timeout
 
 // #region fork

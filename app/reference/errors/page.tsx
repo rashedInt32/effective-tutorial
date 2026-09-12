@@ -41,6 +41,7 @@ export default async function Page() {
           recoverable (the <Code>E</Code> channel).{" "}
           <span className="text-cyan">Defects</span> are bugs — unexpected and
           outside the type. You handle the first and usually let the second crash.
+          A <Code>Cause</Code> records both, plus a third outcome: interruption.
         </Quote>
       </Hero>
 
@@ -54,7 +55,10 @@ export default async function Page() {
         <CodeFrame {...snip.fail} filename="errors.ts" lang="ts" />
         <Callout label="Why tagged?">
           The <Code>_tag</Code> is what <Code>catchTag</Code> matches on, and it
-          keeps distinct failures from blurring together in the channel. (See{" "}
+          keeps distinct failures from blurring together in the channel. Inside{" "}
+          <Code>Effect.gen</Code> a tagged error is also yieldable —{" "}
+          <Code>yield* new NotFound({"{ id }"})</Code> fails the effect, no{" "}
+          <Code>Effect.fail</Code> needed. (See{" "}
           <Link href="/backend/03-schemas" className="text-cyan hover:underline">
             Lesson 03
           </Link>{" "}
@@ -86,11 +90,11 @@ export default async function Page() {
         </p>
         <CodeFrame {...snip.fold} filename="recover.ts" lang="ts" />
         <Quote label="match, everywhere">
-          The same <Code>match</Code> you used on{" "}
+          The same <Code>match</Code> that{" "}
           <Link href="/reference/option-result" className="text-cyan hover:underline">
             Option &amp; Result
           </Link>{" "}
-          — fold the container into a plain value by handling every side.
+          have — fold the container into a plain value by handling every side.
         </Quote>
       </Section>
 
@@ -99,12 +103,17 @@ export default async function Page() {
         <p className="prose-text">
           Transient failures deserve another go. <Code>retry</Code> takes a simple
           count or a <Code>Schedule</Code> — the effect runs once, then the policy
-          decides whether and when to re-run.
+          decides whether and when to re-run. Only typed failures are retried;
+          defects and interruptions pass straight through. Note that{" "}
+          <Code>exponential</Code> on its own never gives up, so cap it with{" "}
+          <Code>upTo</Code>.
         </p>
         <CodeFrame {...snip.retry} filename="retry.ts" lang="ts" />
         <ModuleNote module="Effect / Schedule">
-          More recovery: <Code>catchCause</Code> / <Code>catchDefect</Code> (reach
-          the full cause), <Code>catchIf</Code>, <Code>mapError</Code> /{" "}
+          More recovery: <Code>Effect.catch</Code> (every typed failure at once —
+          v4&apos;s <Code>catchAll</Code>), <Code>orDie</Code> (promote a failure to
+          a defect), <Code>catchCause</Code> / <Code>catchDefect</Code> (reach the
+          full cause), <Code>catchIf</Code>, <Code>mapError</Code> /{" "}
           <Code>tapError</Code>, <Code>ignore</Code>, and <Code>Effect.exit</Code> /{" "}
           <Code>Effect.result</Code> to capture the outcome as a value. Policies:{" "}
           <Code>Schedule.recurs</Code>, <Code>spaced</Code>, <Code>exponential</Code>,{" "}

@@ -16,12 +16,17 @@ export const fromEnv = Option.fromNullishOr(process.env.HOME) // Option<string>
 // #endregion option-construct
 
 // #region option-use
-// The four you reach for daily: `map`/`flatMap` transform the value WHEN present,
+// The ones you reach for daily: `map`/`flatMap` transform the value WHEN present,
 // `filter` can drop it, and `getOrElse`/`match` collapse back to a plain value.
 export const greeting = Option.some("ada").pipe(
   Option.map((name) => name.toUpperCase()),
   Option.filter((name) => name.length > 1),
   Option.getOrElse(() => "ANONYMOUS")
+) // string
+
+export const described = Option.some(3).pipe(
+  Option.flatMap((n) => (n > 0 ? Option.some(n * 2) : Option.none())),
+  Option.match({ onNone: () => "nothing", onSome: (n) => `got ${n}` })
 ) // string
 // #endregion option-use
 
@@ -51,12 +56,12 @@ export const report = Result.succeed(7).pipe(
 // when you need to run with other effects: a `None` becomes a NoSuchElementError,
 // a `Failure` carries its error straight into the Effect's error channel.
 export const program = Effect.gen(function* () {
-  const x = yield* Effect.fromOption(present) //  Effect<number, NoSuchElementError>
+  const x = yield* Effect.fromOption(present) //  Effect<number, Cause.NoSuchElementError>
   const y = yield* Effect.fromResult(ok) //       Effect<number, never>
   return x + y
 })
 
 // ...and back the other way — capture an Effect's outcome as a plain value.
 export const asOption = Effect.option(program) // Effect<Option<number>>
-export const asResult = Effect.result(program) // Effect<Result<number, NoSuchElementError>>
+export const asResult = Effect.result(program) // Effect<Result<number, Cause.NoSuchElementError>>
 // #endregion interop

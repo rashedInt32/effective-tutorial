@@ -60,9 +60,9 @@ export default async function Page() {
       {/* Scoped */}
       <Section n="02" title="Scope it">
         <p className="prose-text">
-          <Code>Effect.scoped</Code> provides the <Code>Scope</Code> and runs every
-          finalizer registered within it when the block ends. The resource lives
-          exactly as long as the work that needs it.
+          <Code>Effect.scoped</Code> supplies the <Code>Scope</Code>. When the
+          wrapped effect ends — however it ends — every finalizer registered inside
+          runs. The resource lives exactly as long as the work that needs it.
         </p>
         <CodeFrame {...snip.scoped} filename="resource.ts" lang="ts" />
         <Callout label="Scope leaves the type">
@@ -92,7 +92,9 @@ export default async function Page() {
         </Quote>
         <ModuleNote module="Effect / Scope">
           More: <Code>acquireUseRelease</Code> (one-shot), <Code>addFinalizer</Code>{" "}
-          (register cleanup ad hoc), <Code>Effect.scope</Code> (reach the current
+          (register cleanup with no resource at all —{" "}
+          <Code>Effect.addFinalizer(() =&gt; Effect.log(&quot;bye&quot;))</Code> inside a
+          scoped block), <Code>Effect.scope</Code> (reach the current
           scope), and <Code>Scope.make</Code> / <Code>Scope.close</Code> for manual
           control.
         </ModuleNote>

@@ -18,7 +18,8 @@ export const reference = a === b //            false — different objects
 
 // #region variants
 // A tagged union: each case has its own `_tag` and fields. `Data.taggedEnum`
-// derives a constructor for every case straight from the type.
+// derives a constructor for every case straight from the type. (A type and a
+// value may share a name — `Shape` is both the union and its constructors.)
 type Shape = Data.TaggedEnum<{
   Circle: { readonly radius: number }
   Rect: { readonly width: number; readonly height: number }

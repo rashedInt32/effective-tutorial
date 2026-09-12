@@ -26,7 +26,7 @@ export default async function Page() {
       {/* Hero */}
       <Hero
         eyebrow="Reference · field guide"
-        title={<>Option <span className="text-gradient">&amp; Either</span></>}
+        title={<>Option <span className="text-gradient">&amp; Result</span></>}
         intro={
           <>
             Two containers you&apos;ll reach for constantly. <Code>Option</Code> is a
@@ -60,7 +60,7 @@ export default async function Page() {
           <Code>T | null | undefined</Code> into an <Code>Option&lt;T&gt;</Code>.
         </Callout>
         <p className="prose-text">
-          The four you&apos;ll use daily: <Code>map</Code> / <Code>flatMap</Code>{" "}
+          The ones you&apos;ll use daily: <Code>map</Code> / <Code>flatMap</Code>{" "}
           transform the value when it&apos;s there, <Code>filter</Code> can drop it,
           and <Code>getOrElse</Code> / <Code>match</Code> collapse back to a plain
           value.
@@ -84,12 +84,12 @@ export default async function Page() {
         </p>
         <CodeFrame {...snip["result-use"]} filename="result.ts" lang="ts" />
         <Quote label="One shape, two containers">
-          Learn <Code>map</Code> · <Code>flatMap</Code> · <Code>filter</Code> ·{" "}
-          <Code>match</Code> · <Code>getOrElse</Code> once and you know them on{" "}
-          <span className="text-cyan">Option</span>,{" "}
+          Learn <Code>map</Code> · <Code>flatMap</Code> · <Code>match</Code> once
+          and you know them on <span className="text-cyan">Option</span>,{" "}
           <span className="text-cyan">Result</span>, and{" "}
           <span className="text-cyan">Effect</span> — the uniform surface is the
-          whole point.
+          whole point. <Code>getOrElse</Code> collapses Option and Result; on Effect
+          the same job is <Code>orElseSucceed</Code>.
         </Quote>
       </Section>
 
@@ -97,7 +97,9 @@ export default async function Page() {
       <Section n="03" title="Lifting into Effect">
         <p className="prose-text">
           <Code>Option</Code> and <Code>Result</Code> are values, not effects — you
-          can&apos;t <Code>yield*</Code> them directly. Lift them when you need to
+          can&apos;t <Code>yield*</Code> them inside <Code>Effect.gen</Code> (they
+          have their own <Code>Option.gen</Code> / <Code>Result.gen</Code>). Lift
+          them when you need to
           run alongside other effects, and capture an effect&apos;s outcome as a
           value going the other way.
         </p>
