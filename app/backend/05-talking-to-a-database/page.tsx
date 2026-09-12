@@ -58,7 +58,9 @@ export default async function Lesson() {
         <p className="prose-text">
           Interpolated values become <strong>bound parameters</strong> — never
           spliced into the SQL text — so the template is injection-safe by
-          construction. Helpers build the clauses for you.
+          construction. <Code>sql.in</Code> expands a list into placeholders, and{" "}
+          <Code>sql.insert</Code> / <Code>sql.update</Code> turn a record into the
+          right clause. All three keep values as parameters.
         </p>
         <CodeFrame {...snip.safe} filename="queries.ts" lang="ts" />
         <Callout label="Safe by default">
@@ -79,9 +81,9 @@ export default async function Lesson() {
         <CodeFrame {...snip.typed} filename="queries.ts" lang="ts" />
         <ModuleNote module="SqlSchema">
           <Code>findOne</Code> for a single row (fails{" "}
-          <Code>NoSuchElementError</Code> when absent), <Code>findAll</Code> for a
-          typed array, and <Code>single</Code> / <Code>void</Code> for the
-          one-or-exactly and write-only shapes.
+          <Code>NoSuchElementError</Code> when absent), <Code>findOneOption</Code>{" "}
+          when absence is normal, <Code>findAll</Code> for a typed array, and{" "}
+          <Code>findNonEmpty</Code> when zero rows is an error.
         </ModuleNote>
       </Section>
 
@@ -118,7 +120,9 @@ export default async function Lesson() {
           Every failure is one <Code>SqlError</Code> carrying a structured{" "}
           <Code>reason</Code>. Branch on the reason&apos;s tag to turn an expected
           database condition into a clean result — a duplicate insert becomes a
-          message, not a crash.
+          message, not a crash. So <Code>orDie</Code> in Q3 is the <em>last</em>{" "}
+          step, not the first: handle the reasons you expect, then let the rest
+          become defects.
         </p>
         <CodeFrame {...snip.errors} filename="repo.ts" lang="ts" />
         <Callout label="Some failures are retryable">
@@ -135,7 +139,9 @@ export default async function Lesson() {
           In code. Each migration is an <Code>Effect</Code> that uses <Code>sql</Code>;
           the migrator records which ran in a table and applies only the pending
           ones, in id order, inside a transaction. Run it once on boot, before
-          serving traffic.
+          serving traffic. <Code>Migrator.make</Code> is called twice: the first
+          call takes dialect hooks like <Code>dumpSchema</Code> (<Code>{"{}"}</Code>{" "}
+          means none), the second takes the loader and an optional table name.
         </p>
         <CodeFrame {...snip.migrate} filename="migrations.ts" lang="ts" />
       </Section>
@@ -151,6 +157,14 @@ export default async function Lesson() {
           real database-backed server.
         </p>
         <CodeFrame {...snip.capstone} filename="server.ts" lang="ts" />
+        <p className="prose-text">
+          The driver is one more package and one more layer —{" "}
+          <Code>PgClient.layer</Code> or <Code>SqliteClient.layer</Code>. The{" "}
+          <Link href="/backend/sql-reference" className="text-cyan hover:underline">
+            sql whole-map
+          </Link>{" "}
+          has the exact call for each.
+        </p>
       </Section>
 
       {/* Level up → reference */}

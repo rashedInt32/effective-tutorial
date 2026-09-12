@@ -32,8 +32,9 @@ export const helloPipe = Effect.log("→ GET /").pipe(
 // #endregion handler-pipe
 
 // #region route
-// A route is a Layer that registers one handler with the router.
-const HelloRoute = HttpRouter.add("GET", "/", helloGen)
+// A route is a Layer that registers one handler with the router. A bare
+// response is the simplest handler; any of the three styles above fits here too.
+const HelloRoute = HttpRouter.add("GET", "/", HttpServerResponse.text("Hello from Effect!"))
 // #endregion route
 
 // #region server-node

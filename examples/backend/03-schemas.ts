@@ -8,12 +8,11 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstab
 
 // #region model
 // A value's *meaning* should live in its type, not just its shape. `.check(...)`
-// attaches a runtime constraint (here, an email-ish pattern); `Schema.brand`
-// makes the result unmixable with a plain string. (Refinement constructors are
-// `Schema.is*` — e.g. isPattern, isMinLength, isBetween.)
-const Email = Schema.String.check(Schema.isPattern(/^[^@\s]+@[^@\s]+$/)).pipe(
-  Schema.brand("Email")
-)
+// attaches a runtime rule (constructors are `Schema.is*`: isPattern, isMinLength,
+// isBetween). `Schema.brand` then makes the result its own type — unmixable
+// with a plain string.
+const EmailString = Schema.String.check(Schema.isPattern(/^[^@\s]+@[^@\s]+$/))
+const Email = EmailString.pipe(Schema.brand("Email"))
 
 // A `Schema.Class` is one declaration that yields a constructor, a TS type, and
 // an encoder/decoder. This is the data our API speaks.
@@ -36,10 +35,20 @@ const CreateUser = Schema.Struct({
 })
 // #endregion payload
 
+// #region encode
+// `schemaJson` encodes THROUGH the schema before serializing: `createdAt` (a
+// Date) becomes an ISO 8601 string and `email` keeps its brand, while any field
+// the schema omits can never leak onto the wire. It returns a reusable encoder.
+const encodeUser = HttpServerResponse.schemaJson(User)
+export const created = (user: User) =>
+  encodeUser(user).pipe(Effect.map(HttpServerResponse.setStatus(201)))
+// #endregion encode
+
 // #region decode
 // `schemaBodyJson` reads the body AND decodes it in one step. `input` is fully
 // typed (name is non-empty, email is branded, age is in range); a malformed body
 // never reaches this line — it fails the Effect with `Schema.SchemaError`.
+// `created` encodes the reply through the User schema and sets 201 (see below).
 export const createUser = Effect.gen(function* () {
   const input = yield* HttpServerRequest.schemaBodyJson(CreateUser)
   const user = new User({
@@ -49,7 +58,7 @@ export const createUser = Effect.gen(function* () {
     age: input.age,
     createdAt: new Date()
   })
-  return yield* HttpServerResponse.schemaJson(User)(user)
+  return yield* created(user)
 })
 // #endregion decode
 
@@ -68,6 +77,12 @@ const Filters = Schema.Struct({
 })
 export const fromQuery = HttpServerRequest.schemaSearchParams(Filters)
 // #endregion parts-query
+
+// #region parts-params
+// /users/:id -> path params are strings on the wire; decode `:id` into a number.
+const UserParams = Schema.Struct({ id: Schema.NumberFromString })
+export const fromParams = HttpRouter.schemaPathParams(UserParams)
+// #endregion parts-params
 
 // #region parts-headers
 // Required headers, validated like everything else (missing key -> SchemaError).
@@ -119,8 +134,9 @@ const findUser = (id: number): Effect.Effect<User, UserNotFound> =>
       )
     : Effect.fail(new UserNotFound({ id }))
 
-// ...mapped to a status per tag. The compiler knows the full error surface, so
-// forgetting a case is a type error — never an unhandled 500.
+// ...mapped to a status per tag. The error channel lists every tag, so
+// `catchTag` autocompletes them and the type shows what is still unhandled.
+// Anything left over reaches the router as a 500.
 export const getUser = (id: number) =>
   findUser(id).pipe(
     Effect.flatMap(HttpServerResponse.schemaJson(User)),
@@ -130,20 +146,12 @@ export const getUser = (id: number) =>
   )
 // #endregion handle-errors
 
-// #region encode
-// `schemaJson` encodes THROUGH the schema before serializing: `createdAt` (a
-// Date) becomes an ISO 8601 string and `email` keeps its brand, while any field
-// the schema omits can never leak onto the wire. It returns a reusable encoder.
-const encodeUser = HttpServerResponse.schemaJson(User)
-export const created = (user: User) =>
-  encodeUser(user).pipe(Effect.map(HttpServerResponse.setStatus(201)))
-// #endregion encode
-
 // #region routes
 // Wire the handlers. `route` builds a value; `addAll` turns the list into the
-// router Layer — then serve it exactly as in Lesson 01.
+// router Layer — then serve it exactly as in Lesson 01. The GET route decodes
+// `:id` with the path-params schema from above, then looks the user up.
 export const Routes = HttpRouter.addAll([
   HttpRouter.route("POST", "/users", createUserSafe),
-  HttpRouter.route("GET", "/users/1", getUser(1))
+  HttpRouter.route("GET", "/users/:id", fromParams.pipe(Effect.flatMap(({ id }) => getUser(id))))
 ])
 // #endregion routes

@@ -51,6 +51,9 @@ export const created = HttpServerResponse.json({ id: 7 }, { status: 201 })
 export const accepted = HttpServerResponse.text("queued").pipe(
   HttpServerResponse.setStatus(202, "Accepted")
 )
+
+// `redirect` sets the Location header and defaults to 302.
+export const home = HttpServerResponse.redirect("/user")
 // #endregion status
 
 // #region headers
@@ -75,11 +78,21 @@ export const echo = (request: HttpServerRequest.HttpServerRequest) =>
   })
 // #endregion read-body
 
+// #region params
+// `:id` in the path becomes a param. `HttpRouter.params` reads them all as
+// strings; Lesson 03 decodes them through a schema instead.
+export const userById = Effect.gen(function* () {
+  const { id } = yield* HttpRouter.params
+  return yield* HttpServerResponse.json({ id })
+})
+// #endregion params
+
 // #region routes
 // Register the endpoints. `route` builds a value; `addAll` turns the list into
 // the router Layer — then serve it exactly as in Lesson 01.
 export const Routes = HttpRouter.addAll([
   HttpRouter.route("GET", "/user", getUser),
+  HttpRouter.route("GET", "/users/:id", userById),
   HttpRouter.route("POST", "/echo", echo)
 ])
 // #endregion routes

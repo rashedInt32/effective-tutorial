@@ -24,6 +24,7 @@ export default async function Lesson() {
     "decode",
     "parts-body",
     "parts-query",
+    "parts-params",
     "parts-headers",
     "invalid",
     "errors",
@@ -34,7 +35,7 @@ export default async function Lesson() {
   // Terminal snippets show an annotated command but copy only the bare command.
   const [createCurlHtml, invalidCurlHtml] = await Promise.all([
     highlight(
-      'curl -X POST localhost:3000/users \\\n  -d \'{"name":"Ada Lovelace","email":"ada@example.com","age":36}\'\n# → 200 {"id":1,"name":"Ada Lovelace","email":"ada@example.com","age":36,"createdAt":"2026-06-07T…Z"}',
+      'curl -X POST localhost:3000/users \\\n  -d \'{"name":"Ada Lovelace","email":"ada@example.com","age":36}\'\n# → 201 {"id":1,"name":"Ada Lovelace","email":"ada@example.com","age":36,"createdAt":"2026-06-07T…Z"}',
       "bash"
     ),
     highlight(
@@ -59,6 +60,14 @@ export default async function Lesson() {
       ...snip["parts-query"],
       filename: "decode.ts",
       desc: "?role=admin&tags=a&tags=b — search params arrive string-keyed, with repeats as arrays, and decode straight into your struct. Literals and arrays map cleanly because their wire form is already a string."
+    },
+    {
+      id: "params",
+      badge: "schemaPathParams",
+      title: "The path",
+      ...snip["parts-params"],
+      filename: "decode.ts",
+      desc: "/users/:id — path params arrive as strings. NumberFromString turns \":id\" into a number, and a non-numeric id is a SchemaError before your handler runs. Adjacent: schemaParams (path and search params together)."
     },
     {
       id: "headers",
@@ -91,8 +100,8 @@ export default async function Lesson() {
         <p className="prose-text">
           A schema is a single declaration that gives you a TypeScript type, a
           runtime validator, and a JSON codec at once. <Code>.check(...)</Code>{" "}
-          adds constraints; <Code>Schema.brand</Code> makes a value{" "}
-          <em>unmixable</em> with a plain string of the same shape.
+          adds a runtime rule; <Code>Schema.brand</Code> then makes the result its
+          own type, <em>unmixable</em> with a plain string of the same shape.
         </p>
         <CodeFrame {...snip.model} filename="model.ts" lang="ts" />
         <Callout label="Rich domain types">
@@ -107,6 +116,12 @@ export default async function Lesson() {
           <Code>createdAt</Code>, so the payload simply omits them.
         </p>
         <CodeFrame {...snip.payload} filename="model.ts" lang="ts" />
+        <p className="prose-text">
+          Why <Code>Class</Code> for one and <Code>Struct</Code> for the other? A{" "}
+          <Code>Schema.Class</Code> also gives you a constructor —{" "}
+          <Code>new User({"{...}"})</Code> — which the server needs. Input you
+          never construct yourself stays a plain <Code>Struct</Code>.
+        </p>
         <ModuleNote module="Schema">
           <Code>Struct</Code> / <Code>Class</Code> for records, <Code>Union</Code> /{" "}
           <Code>Literals</Code> for variants, <Code>Array</Code> /{" "}
@@ -122,14 +137,18 @@ export default async function Lesson() {
         <p className="prose-text">
           <Code>HttpServerRequest.schemaBodyJson(schema)</Code> reads the body{" "}
           <strong>and</strong> decodes it in one step. The success value is fully
-          typed; a body that doesn&apos;t fit never reaches your logic.
+          typed; a body that doesn&apos;t fit never reaches your logic. The reply
+          goes out through <Code>created</Code>, the 201 encoder from Q6.
         </p>
         <CodeFrame {...snip.decode} filename="decode.ts" lang="ts" />
         <Callout label="Failure is in the type">
-          Decoding returns <Code>Effect&lt;CreateUser, SchemaError&gt;</Code>. The{" "}
-          <Code>SchemaError</Code> sits in the error channel, so an invalid body is
-          a value you handle — never an exception that escapes. (Effect v4 fails
-          with <Code>SchemaError</Code>, not the older <Code>ParseError</Code>.)
+          Decoding returns{" "}
+          <Code>Effect&lt;CreateUser, SchemaError | HttpServerError, HttpServerRequest&gt;</Code>.{" "}
+          <Code>SchemaError</Code> is the shape failure you handle — a value, never
+          an exception that escapes. <Code>HttpServerError</Code> means the body
+          could not be read at all; the router already turns that into a response.
+          (Effect v4 fails with <Code>SchemaError</Code>, not the older{" "}
+          <Code>ParseError</Code>.)
         </Callout>
         <CodeFrame
           html={createCurlHtml}
@@ -186,9 +205,10 @@ export default async function Lesson() {
         </p>
         <CodeFrame {...snip.errors} filename="errors.ts" lang="ts" />
         <p className="prose-text">
-          Then map each tag to its status. Because the error surface is typed,
-          missing a case is a <strong>compile error</strong>, not a stray{" "}
-          <Code>500</Code>.
+          Then map each tag to its status. Because the error surface is typed,{" "}
+          <Code>catchTag</Code> autocompletes the tags and the type shows what is
+          still unhandled. Anything left over reaches the router as a{" "}
+          <Code>500</Code> — Lesson 04 shows how an error can render itself instead.
         </p>
         <CodeFrame {...snip["handle-errors"]} filename="handlers.ts" lang="ts" />
         <ModuleNote module="Effect">
@@ -245,7 +265,7 @@ export default async function Lesson() {
         </Link>
       </div>
 
-      {/* Next (renders nothing once this is the last sequential lesson) */}
+      {/* Next */}
       <LessonNav currentSlug={LESSON.slug} />
     </>
   )
