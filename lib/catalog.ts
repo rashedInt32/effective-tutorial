@@ -248,7 +248,7 @@ const frontendData = [
     n: "11",
     title: "Async state",
     desc: "AsyncResult carries waiting alongside the value — stale data stays on screen.",
-    ready: false
+    ready: true
   },
   {
     slug: "12-services-in-the-browser",
