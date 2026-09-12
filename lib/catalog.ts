@@ -235,10 +235,49 @@ const fieldGuideData = [
   }
 ] as const
 
+const frontendData = [
+  {
+    slug: "10-state-in-the-browser",
+    n: "10",
+    title: "State in the browser",
+    desc: "An Atom is reactive state; read it and write it from React with hooks.",
+    ready: true
+  },
+  {
+    slug: "11-async-state",
+    n: "11",
+    title: "Async state",
+    desc: "AsyncResult carries waiting alongside the value — stale data stays on screen.",
+    ready: false
+  },
+  {
+    slug: "12-services-in-the-browser",
+    n: "12",
+    title: "Services in the browser",
+    desc: "Atom.runtime gives atoms a Layer — the same swap that made the backend testable.",
+    ready: false
+  },
+  {
+    slug: "13-one-contract-both-ends",
+    n: "13",
+    title: "One contract, both ends",
+    desc: "Turn the HttpApi from Lesson 07 into query and mutation atoms. No codegen.",
+    ready: false
+  },
+  {
+    slug: "14-rendering-in-nextjs",
+    n: "14",
+    title: "Rendering in Next.js",
+    desc: "Server-render the first paint, then hand the same atoms to the client.",
+    ready: false
+  }
+] as const
+
 /** Slug unions derived from the data, so icon maps etc. are compiler-checked. */
 export type LessonSlug = (typeof lessonData)[number]["slug"]
 export type WholeMapSlug = (typeof wholeMapData)[number]["slug"]
 export type FieldGuideSlug = (typeof fieldGuideData)[number]["slug"]
+export type FrontendSlug = (typeof frontendData)[number]["slug"]
 
 /** The sequential backend lessons, in order. `nextLesson` walks this list. */
 export const lessons = lessonData.map((l) => ({
@@ -251,6 +290,13 @@ export const wholeMaps = wholeMapData.map((p) => ({
   ...p,
   href: `/backend/${p.slug}`
 })) satisfies readonly CatalogPage[]
+
+/** The sequential frontend lessons, in order — their own chain, continuing the
+    numbering from the backend track. */
+export const frontendLessons = frontendData.map((l) => ({
+  ...l,
+  href: `/frontend/${l.slug}`
+})) satisfies readonly Lesson[]
 
 /** The reference field guides under /reference. */
 export const fieldGuides = fieldGuideData.map((p) => ({
@@ -268,8 +314,22 @@ export function lessonBySlug(slug: LessonSlug): Lesson {
   return lesson
 }
 
-/** The lesson after `slug` in the sequential chain, if any. */
+/** Same, for the frontend track. */
+export function frontendLessonBySlug(slug: FrontendSlug): Lesson {
+  const lesson = frontendLessons.find((l) => l.slug === slug)
+  if (!lesson) throw new Error(`lib/catalog: unknown frontend slug "${slug}"`)
+  return lesson
+}
+
+/**
+ * The lesson after `slug`, within its own track. The two tracks are separate
+ * chains: backend ends at 09 rather than spilling into the frontend lessons,
+ * and each track's last lesson terminates.
+ */
 export function nextLesson(slug: string): Lesson | undefined {
-  const i = lessons.findIndex((l) => l.slug === slug)
-  return i >= 0 ? lessons[i + 1] : undefined
+  for (const track of [lessons, frontendLessons]) {
+    const i = track.findIndex((l) => l.slug === slug)
+    if (i >= 0) return track[i + 1]
+  }
+  return undefined
 }

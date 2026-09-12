@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@effect/atom-react':
+        specifier: 4.0.0-rc.112
+        version: 4.0.0-rc.112(effect@4.0.0-rc.112)(react@19.2.4)(scheduler@0.27.0)
       '@effect/platform-bun':
         specifier: 4.0.0-rc.112
         version: 4.0.0-rc.112(effect@4.0.0-rc.112)
@@ -145,6 +148,13 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
+
+  '@effect/atom-react@4.0.0-rc.112':
+    resolution: {integrity: sha512-Ksf90KQa6D4UDnMj4M84arlVKNIuwxxF2GvgXBzuaYi2LsgririsUhKQ5SYaK1euf8oIYeamEuthoZSbUQmIhw==}
+    peerDependencies:
+      effect: ^4.0.0-rc.112
+      react: '>=19.0.0 <20.0.0'
+      scheduler: '>=0.25.0 <0.28.0'
 
   '@effect/language-service@0.87.2':
     resolution: {integrity: sha512-CfiSoaVQO8pZgaMZGw5VvMvRGybsJ2LaSDoLYaqiVGvo/YYPYVR2GzUKY0h1NtIweq/+SQ5XLrvtzPIttWQ0GQ==}
@@ -2825,6 +2835,12 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
+
+  '@effect/atom-react@4.0.0-rc.112(effect@4.0.0-rc.112)(react@19.2.4)(scheduler@0.27.0)':
+    dependencies:
+      effect: 4.0.0-rc.112
+      react: 19.2.4
+      scheduler: 0.27.0
 
   '@effect/language-service@0.87.2': {}
 

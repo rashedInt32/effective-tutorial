@@ -17,6 +17,7 @@
     }
   },
   "dependencies": {
+    "@effect/atom-react": "4.0.0-rc.112",
     "@effect/platform-bun": "4.0.0-rc.112",
     "@effect/platform-node": "4.0.0-rc.112",
     "@vercel/analytics": "^2.0.1",

@@ -31,6 +31,7 @@ import { Reveal } from "@/app/_components/Reveal"
 import {
   type FieldGuideSlug,
   fieldGuides,
+  frontendLessons,
   lessons,
   type WholeMapSlug,
   wholeMaps
@@ -93,6 +94,26 @@ export default function Home() {
         blurb="Work through them in order — each answers a question and builds on the last."
       >
         {lessons.map((l, i) => (
+          <CatalogCard
+            key={l.slug}
+            href={l.href}
+            mark={l.n}
+            kind="Lesson"
+            title={l.title}
+            desc={l.desc}
+            ready={l.ready}
+            delay={i * 0.05}
+          />
+        ))}
+      </Group>
+
+      {/* Frontend lessons — the second track */}
+      <Group
+        kicker="The path · frontend"
+        title="In the browser"
+        blurb="The same ideas on the client — reactive state, and the API contract you already wrote."
+      >
+        {frontendLessons.map((l, i) => (
           <CatalogCard
             key={l.slug}
             href={l.href}
