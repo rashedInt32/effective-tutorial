@@ -262,7 +262,7 @@ const frontendData = [
     n: "13",
     title: "One contract, both ends",
     desc: "Turn the HttpApi from Lesson 07 into query and mutation atoms. No codegen.",
-    ready: false
+    ready: true
   },
   {
     slug: "14-rendering-in-nextjs",
