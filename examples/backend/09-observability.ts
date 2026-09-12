@@ -76,10 +76,17 @@ export const latency = Metric.timer("http_request_duration", {
   description: "Request latency"
 })
 
+// A `gauge` is the third shape: a value that goes UP AND DOWN — queue depth,
+// open connections, memory in use. You set it rather than accumulate it.
+export const queueDepth = Metric.gauge("queue_depth", {
+  description: "Jobs waiting to be processed"
+})
+
 export const measured = Effect.gen(function* () {
   yield* Metric.update(requests, 1)
   const [duration, result] = yield* Effect.timed(doWork)
   yield* Metric.update(latency, duration)
+  yield* Metric.update(queueDepth, 3) // set, don't add — gauges report a level
   return result
 })
 // #endregion metric

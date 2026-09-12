@@ -122,9 +122,17 @@ export default async function Lesson() {
           <Code>Metric.update</Code> feeds a data point; the runtime keeps the
           running aggregate, ready to scrape — no per-event storage, unlike logs.
           Pair it with <Code>Effect.timed</Code> so the number is measured, not
-          guessed.
+          guessed. A <Code>gauge</Code> is the third shape: a level that moves both
+          ways — queue depth, open connections — which you <em>set</em> rather
+          than accumulate.
         </p>
         <CodeFrame {...snip.metric} filename="handler.ts" lang="ts" />
+        <ModuleNote module="Metric">
+          Counter, gauge, histogram, and <Code>timer</Code> cover almost
+          everything; <Code>summary</Code> and <Code>frequency</Code> handle
+          quantiles and string-keyed tallies. <Code>Metric.withAttributes</Code>{" "}
+          splits one metric into labelled series — per route, per status.
+        </ModuleNote>
       </Section>
 
       {/* Q6 — compose */}
