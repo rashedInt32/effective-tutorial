@@ -81,7 +81,7 @@ export default function Home() {
           Effect, <span className="text-gradient">on point.</span>
         </h1>
         <p className="mt-6 text-lg text-muted leading-relaxed max-w-xl">
-          A backend (then frontend) built one real question at a time. No walls of
+          A backend and a frontend, built one real question at a time. No walls of
           theory — just &ldquo;how do I do X?&rdquo;, answered with code you can run, and a
           line you&apos;ll remember.
         </p>
