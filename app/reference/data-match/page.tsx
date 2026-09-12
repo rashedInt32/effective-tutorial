@@ -86,13 +86,18 @@ export default async function Page() {
           silently drift apart.
         </Quote>
         <ModuleNote module="Data / Match">
-          More: <Code>Data.Class</Code> / <Code>TaggedClass</Code> (named records),
+          More: <Code>Data.Class</Code> / <Code>TaggedClass</Code> (named records),{" "}
+          <Code>Data.TaggedError</Code> (a tagged class that is also an error — see{" "}
+          <Link href="/reference/errors" className="text-cyan hover:underline">
+            Fail &amp; recover
+          </Link>
+          ),
           and from <Code>taggedEnum</Code> the generated <Code>$is</Code> /{" "}
           <Code>$match</Code> helpers. In <Code>Match</Code>:{" "}
           <Code>Match.type&lt;T&gt;()</Code> (match a type, not a value),{" "}
           <Code>when</Code> / <Code>tags</Code> / <Code>orElse</Code>, and{" "}
-          <Code>Match.option</Code> / <Code>either</Code> for a non-exhaustive
-          result.
+          <Code>Match.option</Code> / <Code>result</Code> for a non-exhaustive
+          outcome.
         </ModuleNote>
       </Section>
     </>

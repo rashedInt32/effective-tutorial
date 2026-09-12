@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
 import { Hero } from "@/app/_components/LessonShell"
-import { Callout, Code, Quote, Section } from "@/app/_components/Prose"
+import { Callout, Code, ModuleNote, Quote, Section } from "@/app/_components/Prose"
 
 export const metadata: Metadata = {
   title: "Random — Effect reference",
@@ -23,9 +23,10 @@ export default async function Page() {
         intro={
           <>
             Randomness in Effect is read from the <Code>Random</Code>{" "}
-            <em>service</em>, not a global <Code>Math.random()</Code>. That one
-            indirection is the whole point: in production it&apos;s a real PRNG, but
-            a test can pin a seed and get the exact same sequence every run.
+            <em>service</em>. The default implementation wraps{" "}
+            <Code>Math.random()</Code>, so the indirection is the point, not the
+            generator: a test swaps in a seeded one and replays the exact same
+            sequence every run.
           </>
         }
       >
@@ -45,6 +46,13 @@ export default async function Page() {
           service, they compose like any other effect.
         </p>
         <CodeFrame {...snip.draw} filename="random.ts" lang="ts" />
+        <ModuleNote module="Random">
+          More: <Code>nextInt</Code>, <Code>nextBetween</Code> for floats, and{" "}
+          <Code>choice</Code> to pick one element (it fails with{" "}
+          <Code>Cause.NoSuchElementError</Code> on an empty iterable).{" "}
+          <Code>nextIntBetween</Code> includes the max — pass{" "}
+          <Code>{"{ halfOpen: true }"}</Code> to exclude it.
+        </ModuleNote>
       </Section>
 
       {/* Deterministic */}
@@ -57,9 +65,9 @@ export default async function Page() {
         </p>
         <CodeFrame {...snip.deterministic} filename="random.ts" lang="ts" />
         <Callout label="Seeded, not secure">
-          A seeded PRNG is for reproducibility, not secrets. For tokens or
-          passwords reach for a cryptographic source — predictable-by-design is the
-          opposite of what you want there.
+          Neither the default nor a seeded run is a secret source: one is{" "}
+          <Code>Math.random()</Code>, the other is deterministic by design. For
+          tokens or passwords reach for the platform&apos;s <Code>crypto</Code>.
         </Callout>
       </Section>
 

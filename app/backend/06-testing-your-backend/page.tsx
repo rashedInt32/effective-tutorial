@@ -75,8 +75,9 @@ export default async function Lesson() {
           A typed failure is data, not an exception — so don&apos;t reach for{" "}
           <Code>try/catch</Code>. <Code>runPromiseExit</Code> always resolves, to
           an <Code>Exit</Code> that is either a success or a typed failure.{" "}
-          <Code>Exit.isFailure</Code> narrows it, and the declared error is right
-          there in the cause.
+          <Code>Exit.isFailure</Code> narrows it, and <Code>Cause.squash</Code>{" "}
+          pulls the declared error out of the cause — so you assert on the error
+          itself, not just on &ldquo;something went wrong&rdquo;.
         </p>
         <CodeFrame {...snip.failure} filename="repo.test.ts" lang="ts" />
         <ModuleNote module="Exit / Cause">
@@ -90,16 +91,19 @@ export default async function Lesson() {
       <Section n="Q4" title="How do I test something that waits?">
         <p className="prose-text">
           Time is the usual reason tests are slow and flaky. <Code>TestClock</Code>{" "}
-          makes time a value you advance by hand: provide its <Code>layer</Code>,
-          fork the effect that waits, jump the clock past the deadline, and join —
-          the timeout fires with <em>no real waiting</em>. A 30-second deadline,
-          verified in microseconds.
+          makes time a value you advance by hand: provide its <Code>layer</Code>,{" "}
+          <Code>forkChild</Code> the effect that waits (a child fiber, tied to the
+          test&apos;s own), jump the clock past the deadline, and{" "}
+          <Code>Fiber.join</Code> it — the timeout fires with{" "}
+          <em>no real waiting</em>. A 30-second deadline, verified in microseconds.
         </p>
         <CodeFrame {...snip.clock} filename="timeout.test.ts" lang="ts" />
         <Callout label="Why read time as an Effect">
-          This is the payoff of <Code>Clock.currentTimeMillis</Code> over{" "}
-          <Code>Date.now()</Code>: the clock is a service, so a test can substitute
-          one whose &ldquo;now&rdquo; you decide. The same code is deterministic
+          This is the payoff of reading time through the <Code>Clock</Code>{" "}
+          service — <Code>Effect.sleep</Code>, <Code>Effect.timeout</Code>, and{" "}
+          <Code>Clock.currentTimeMillis</Code> all consult it — instead of{" "}
+          <Code>Date.now()</Code> or <Code>setTimeout</Code>: a test can substitute
+          a clock whose &ldquo;now&rdquo; you decide. The same code is deterministic
           under test and real in production.
         </Callout>
       </Section>

@@ -6,7 +6,7 @@ import { Hero } from "@/app/_components/LessonShell"
 import { Callout, Code, ModuleNote, Quote, Section } from "@/app/_components/Prose"
 
 export const metadata: Metadata = {
-  title: "Software Transactional Memory — Effect reference",
+  title: "Transactions (Effect.tx & Tx*) — Effect reference",
   description:
     "STM replaces locks with transactions: read and write transactional values inside Effect.tx, and the whole block commits atomically — all-or-nothing, no torn reads, and it retries itself on a conflict."
 }
@@ -65,7 +65,9 @@ export default async function Page() {
         <Callout label="Retry is automatic">
           You don&apos;t catch-and-loop. If a value the transaction read changed
           before it could commit, the runtime re-runs the block against the new
-          state — so the committed result is always consistent.
+          state — so the committed result is always consistent. Want to{" "}
+          <em>wait</em> rather than fail? <Code>yield* Effect.txRetry</Code> parks
+          the transaction until something it read changes, then re-runs it.
         </Callout>
       </Section>
 
@@ -81,8 +83,10 @@ export default async function Page() {
         <ModuleNote module="Tx*">
           The whole transactional family: <Code>TxRef</Code>, <Code>TxHashMap</Code>,{" "}
           <Code>TxHashSet</Code>, <Code>TxQueue</Code>, <Code>TxChunk</Code>,{" "}
-          <Code>TxSemaphore</Code>. Mix any of them in a single <Code>Effect.tx</Code>{" "}
-          and they commit as one.
+          <Code>TxSemaphore</Code>, <Code>TxDeferred</Code>,{" "}
+          <Code>TxPriorityQueue</Code>, <Code>TxPubSub</Code>,{" "}
+          <Code>TxReentrantLock</Code>, and <Code>TxSubscriptionRef</Code>. Mix any
+          of them in a single <Code>Effect.tx</Code> and they commit as one.
         </ModuleNote>
       </Section>
     </>

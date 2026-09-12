@@ -15,7 +15,9 @@ declare const closeConn: (conn: Conn) => Effect.Effect<void>
 // guaranteed to run when that scope closes — no matter how the effect ends.
 const connection = Effect.acquireRelease(
   openConn,
-  (conn) => closeConn(conn) // release; also receives the Exit if you need it
+  // The release also receives an Exit — success, failure, or interruption — so
+  // it can behave differently per outcome. Here we just close.
+  (conn) => closeConn(conn)
 ) // Effect<Conn, never, Scope>
 // #endregion acquire-release
 

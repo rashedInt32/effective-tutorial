@@ -145,7 +145,7 @@ const fieldGuideData = [
   },
   {
     slug: "option-result",
-    title: "Option & Either (Result)",
+    title: "Option & Result",
     desc: "Values that might be absent or failed — and the combinators they share.",
     ready: true
   },
@@ -211,7 +211,7 @@ const fieldGuideData = [
   },
   {
     slug: "stm",
-    title: "Software Transactional Memory",
+    title: "Transactions — Effect.tx & Tx*",
     desc: "Lock-free shared state — read and write transactional values in one atomic, self-retrying Effect.tx.",
     ready: true
   },

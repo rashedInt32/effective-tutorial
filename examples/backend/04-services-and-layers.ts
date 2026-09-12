@@ -59,7 +59,8 @@ export const getUser = (id: number) =>
 // A Layer is the RECIPE that builds a service. `Layer.effect` runs an Effect to
 // produce the implementation — and that Effect may itself ask for other services
 // (a connection, a logger, …), which then show up in the layer's requirements.
-// Here it's a simple in-memory store.
+// This in-memory store needs nothing, so `Layer.succeed` would do too; `effect`
+// is the form Lesson 05 needs, so you meet it now.
 export const UserRepoLive = Layer.effect(
   UserRepo,
   Effect.gen(function* () {
@@ -86,8 +87,9 @@ export const UserRepoLive = Layer.effect(
 // through `serve`, so you satisfy it at the EDGE — `Layer.provide(UserRepoLive)`
 // alongside the platform layer. Swap that one line and the whole server runs on
 // a different implementation; nothing inside the handlers changes.
+const UserParams = Schema.Struct({ id: Schema.NumberFromString })
 const Routes = HttpRouter.addAll([
-  HttpRouter.route("GET", "/users/1", getUser(1))
+  HttpRouter.route("GET", "/users/:id", HttpRouter.schemaPathParams(UserParams).pipe(Effect.flatMap(({ id }) => getUser(id))))
 ])
 
 export const HttpLive = HttpRouter.serve(Routes).pipe(
@@ -125,7 +127,7 @@ export const findInTest = Effect.gen(function* () {
 export class RequestId extends Context.Service<RequestId, { value: string }>()("app/RequestId") {}
 
 export const RequestIdLive = HttpRouter.middleware<{ provides: RequestId }>()(
-  Effect.succeed((httpEffect) => Effect.provideService(httpEffect, RequestId, { value: "req-123" }))
+  (httpEffect) => Effect.provideService(httpEffect, RequestId, { value: "req-123" })
 ).layer
 
 export const WhoAmI = HttpRouter.add(

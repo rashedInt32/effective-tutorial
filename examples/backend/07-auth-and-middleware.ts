@@ -17,7 +17,7 @@ import {
 // a typed "who is calling" service, and fails with a 401 when the credential is
 // missing or bad — so every protected handler simply ASKS for the caller and
 // trusts it. Authentication (who are you) and authorization (may you do this)
-// stay separate. Every region typechecks against effect@4 beta.
+// stay separate.
 
 // #region scheme
 // Two pieces. `HttpApiSecurity.bearer` describes the credential: an
@@ -29,16 +29,15 @@ export class CurrentUser extends Context.Service<CurrentUser, {
   readonly roles: ReadonlyArray<string>
 }>()("app/CurrentUser") {}
 
-export const bearer = HttpApiSecurity.bearer
 // #endregion scheme
 
 // #region middleware
 // `HttpApiMiddleware.Service` declares the contract: which `security` scheme it
 // reads, what it `provides` to handlers, and the typed `error` it fails with.
 // `Unauthorized` already carries a 401 on the wire — no status to set by hand.
-export class Authorization extends HttpApiMiddleware.Service<Authorization, {
+export class Authn extends HttpApiMiddleware.Service<Authn, {
   provides: CurrentUser
-}>()("app/Authorization", {
+}>()("app/Authn", {
   security: { bearer: HttpApiSecurity.bearer },
   error: HttpApiError.Unauthorized
 }) {}
@@ -48,7 +47,7 @@ export class Authorization extends HttpApiMiddleware.Service<Authorization, {
 // The implementation is a `Layer` keyed by scheme name. It receives the decoded
 // `credential` and either PROVIDES `CurrentUser` to the wrapped handler or fails
 // with 401 — and that one failure rejects every protected route at the door.
-export const AuthorizationLive = Layer.succeed(Authorization, {
+export const AuthnLive = Layer.succeed(Authn, {
   bearer: (httpEffect, { credential }) =>
     Effect.gen(function* () {
       // `credential` is Redacted: unwrap ONLY to verify, never to log.
@@ -92,7 +91,7 @@ const deleteDocument = HttpApiEndpoint.delete("deleteDocument", "/documents/:id"
 
 export const documents = HttpApiGroup.make("documents")
   .add(getDocument, deleteDocument)
-  .middleware(Authorization) // <- one line guards the whole group
+  .middleware(Authn) // <- one line guards the whole group
 
 export const api = HttpApi.make("DocsApi").add(documents)
 // #endregion protect
@@ -136,12 +135,12 @@ export const DocumentsLive = HttpApiBuilder.group(api, "documents", (handlers) =
 // #region serve
 // Wire it up: the API layer, the group handlers, and the auth implementation.
 // The middleware's requirement is satisfied once, here at the edge — provide a
-// different `AuthorizationLive` in a test and every route is authenticated by
+// different `AuthnLive` in a test and every route is authenticated by
 // the double instead, with no handler changing.
 export const HttpLive = HttpRouter.serve(
   HttpApiBuilder.layer(api).pipe(
     Layer.provide(DocumentsLive),
-    Layer.provide(AuthorizationLive)
+    Layer.provide(AuthnLive)
   )
 ).pipe(Layer.provide(NodeHttpServer.layer(() => createServer(), { port: 3000 })))
 // #endregion serve

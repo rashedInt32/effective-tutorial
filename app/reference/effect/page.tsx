@@ -50,8 +50,10 @@ export default async function Page() {
         <p className="prose-text">
           Get <em>into</em> an Effect. <Code>succeed</Code> / <Code>fail</Code>{" "}
           never throw; <Code>sync</Code> wraps a synchronous thunk;{" "}
-          <Code>promise</Code> a non-failing async; <Code>tryPromise</Code> one that
-          can reject, routing the rejection into the typed error channel.
+          <Code>promise</Code> wraps an async call you trust never to reject;{" "}
+          <Code>tryPromise</Code> wraps one that can, routing the rejection into the
+          typed error channel. Without a <Code>catch</Code>, that rejection arrives
+          as <Code>Cause.UnknownError</Code>.
         </p>
         <CodeFrame {...snip.create} filename="create.ts" lang="ts" />
         <Callout label="Failures are values">
@@ -70,21 +72,20 @@ export default async function Page() {
           short flows.
         </p>
         <CodeFrame {...snip.sequence} filename="sequence.ts" lang="ts" />
-        <Callout label="gen is just flatMap">
-          Every <Code>yield*</Code> in a generator is a <Code>flatMap</Code> under
-          the hood — <Code>gen</Code> is sugar for the <Code>pipe</Code> form, so
-          pick whichever reads clearest for the job.
+        <Callout label="gen thinks in flatMap">
+          Read every <Code>yield*</Code> as a <Code>flatMap</Code>. The two forms
+          build equivalent Effects, so pick whichever reads clearest for the job.
         </Callout>
       </Section>
 
       {/* Transform */}
       <Section n="03" title="Transform — the everyday combinators">
         <p className="prose-text">
-          The same handful you met on{" "}
+          The same handful that{" "}
           <Link href="/reference/option-result" className="text-cyan hover:underline">
             Option &amp; Result
-          </Link>
-          , now on Effect: <Code>map</Code> a success, <Code>flatMap</Code> into
+          </Link>{" "}
+          share, now on Effect: <Code>map</Code> a success, <Code>flatMap</Code> into
           another Effect, <Code>tap</Code> for a side effect that leaves the value
           alone, <Code>as</Code> to replace it.
         </p>
@@ -97,7 +98,12 @@ export default async function Page() {
           A description does nothing until a runner executes it — so you run{" "}
           <em>once</em>, as late as possible. <Code>runSync</Code> for synchronous
           effects, <Code>runPromise</Code> for async, <Code>runFork</Code> for a
-          background fiber.
+          background <em>fiber</em> — Effect&apos;s lightweight thread, covered on the{" "}
+          <Link href="/reference/concurrency" className="text-cyan hover:underline">
+            Concurrency
+          </Link>{" "}
+          page. <Code>runSync</Code> throws if the effect suspends or fails, so
+          reach for it only when you know the work is synchronous.
         </p>
         <CodeFrame {...snip.run} filename="run.ts" lang="ts" />
         <ModuleNote module="Effect">

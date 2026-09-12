@@ -45,8 +45,10 @@ export default async function Page() {
           <Code>Cache.make</Code> wraps a <Code>lookup</Code> (any{" "}
           <Code>key → Effect</Code>) with memoization: a hit returns the stored
           value, a miss runs the lookup once, and concurrent misses for the{" "}
-          <em>same</em> key share one in-flight lookup. <Code>capacity</Code> bounds
-          entries; <Code>timeToLive</Code> expires them.
+          <em>same</em> key share one in-flight lookup. <Code>capacity</Code> is
+          required and bounds entries, evicting the oldest-inserted first — a hit
+          does not move an entry to the back. <Code>timeToLive</Code> expires
+          them.
         </p>
         <CodeFrame {...snip.cache} filename="cache.ts" lang="ts" />
         <Callout label="One miss, not a thundering herd">
@@ -54,15 +56,27 @@ export default async function Page() {
           <em>once</em> — the other ninety-nine await the same result. Deduplication
           is built into <Code>get</Code>.
         </Callout>
+        <Callout label="No key to cache by?">
+          <Code>Effect.cachedWithTTL(effect, &quot;5 minutes&quot;)</Code> memoizes
+          a single effect with no key at all. Reach for <Code>Cache</Code> when the
+          result varies by input.
+        </Callout>
+        <ModuleNote module="Cache">
+          More: <Code>getOption</Code> (read without triggering a lookup),{" "}
+          <Code>set</Code>, <Code>has</Code>, <Code>invalidateAll</Code>,{" "}
+          <Code>invalidateWhen</Code>, <Code>size</Code>, and <Code>keys</Code> /{" "}
+          <Code>values</Code> / <Code>entries</Code>.
+        </ModuleNote>
       </Section>
 
       {/* Refresh */}
       <Section n="02" title="Keep entries fresh">
         <p className="prose-text">
           Stale beats slow — but only briefly. <Code>refresh</Code> recomputes a
-          key <em>without</em> evicting it, so readers keep getting the old value
-          until the new one lands. <Code>invalidate</Code> drops an entry so the
-          next read recomputes.
+          key <em>without</em> evicting it, so other readers keep getting the old
+          value until the new one lands. The caller of <Code>refresh</Code> waits
+          for that recompute — fork it when you want fire-and-forget.{" "}
+          <Code>invalidate</Code> drops an entry so the next read recomputes.
         </p>
         <CodeFrame {...snip.refresh} filename="cache.ts" lang="ts" />
         <ModuleNote module="Cache / ScopedCache">
@@ -85,7 +99,7 @@ export default async function Page() {
           together into one call — a hundred <Code>getUser</Code>s become a single{" "}
           <Code>WHERE id IN (…)</Code>.
         </p>
-        <CodeFrame {...snip.batch} filename="batch.ts" lang="ts" />
+        <CodeFrame {...snip.batch} filename="cache.ts" lang="ts" />
         <Quote label="The N+1, designed out">
           You write the loop as if each lookup were independent; the resolver sees
           them as a set. The naive shape and the efficient execution stop being in

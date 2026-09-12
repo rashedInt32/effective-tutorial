@@ -17,6 +17,7 @@ const LESSON = lessonBySlug("04-services-and-layers")
 
 export default async function Lesson() {
   const snip = await highlightRegions(FILE, [
+    "model",
     "define",
     "build",
     "use",
@@ -34,7 +35,7 @@ export default async function Lesson() {
           <>
             So far every handler did its own work inline. That tangles HTTP,
             business rules, and data access into one knot. The untangler is a{" "}
-            <Code>service</Code> — a typed dependency a handler <em>asks</em> for —
+            <em>service</em> — a typed dependency a handler <em>asks</em> for —
             built by a <Code>Layer</Code>. The handler stays about HTTP; the service
             owns the work; and at the edge you choose which implementation to plug
             in. This is dependency injection, tracked by the compiler.
@@ -42,14 +43,26 @@ export default async function Lesson() {
         }
       />
 
+      {/* Q0 — model */}
+      <Section n="Q0" title="What data are we serving?">
+        <p className="prose-text">
+          The same <Code>User</Code> as Lesson 03, plus one new trick:{" "}
+          <Code>UserNotFound</Code> implements <Code>HttpServerRespondable</Code>, so
+          the router renders it as a <Code>404</Code> by itself. The handler never
+          catches it — the error knows its own status.
+        </p>
+        <CodeFrame {...snip.model} filename="model.ts" lang="ts" />
+      </Section>
+
       {/* Q1 — define */}
       <Section n="Q1" title="How do I describe a dependency?">
         <p className="prose-text">
           <Code>Context.Service</Code> declares one in a single shot: the class is
           both the <strong>tag</strong> you ask for and the <strong>shape</strong>{" "}
-          you get back. This is the interface — what callers can do, with no hint of
-          how. Methods return <Code>Effect</Code>s, so they can fail and require
-          things of their own.
+          you get back. (This tag is the service&apos;s lookup key — not the{" "}
+          <Code>_tag</Code> field on an error.) This is the interface — what callers
+          can do, with no hint of how. Methods return <Code>Effect</Code>s, so they
+          can fail and require things of their own.
         </p>
         <CodeFrame {...snip.define} filename="repo.ts" lang="ts" />
         <Callout label="Interface, not implementation">
@@ -66,7 +79,9 @@ export default async function Lesson() {
           <Code>Layer.effect</Code> runs an <Code>Effect</Code> to produce the
           implementation — and that effect may itself <em>ask for</em> other
           services (a connection, a logger), which then show up in the layer&apos;s
-          type until you provide them. Here it&apos;s a simple in-memory store.
+          type until you provide them. This in-memory store needs nothing —{" "}
+          <Code>Layer.succeed</Code> would do — but <Code>Layer.effect</Code> is the
+          form Lesson 05 needs, so you meet it now.
         </p>
         <CodeFrame {...snip.build} filename="repo.ts" lang="ts" />
         <ModuleNote module="Layer">

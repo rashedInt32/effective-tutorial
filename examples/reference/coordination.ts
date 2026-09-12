@@ -70,13 +70,9 @@ export const pooled = Effect.scoped(
       acquire: Effect.acquireRelease(openConn, (c) => c.close), // scoped resource
       size: 5
     })
-    // Borrow one for the duration of this inner scope, then it's returned.
-    return yield* Effect.scoped(
-      Effect.gen(function* () {
-        const conn = yield* Pool.get(pool)
-        return yield* conn.query
-      })
-    )
+    // `use` borrows one for the duration of the callback, then returns it.
+    // (`Pool.get` is the lower-level form: it borrows for the current scope.)
+    return yield* Pool.use(pool, (conn) => conn.query)
   })
 )
 // #endregion pool

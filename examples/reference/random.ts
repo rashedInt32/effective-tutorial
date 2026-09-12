@@ -1,10 +1,9 @@
 import { Effect, Random } from "effect"
 
-// Randomness in Effect is read from the `Random` SERVICE, not a global
-// `Math.random()`. That one indirection is the whole point: in production it's a
-// real PRNG, but a test can pin a seed and get the exact same sequence every run
-// — the same testability story as `Clock`. Every region typechecks against
-// effect@4 beta.
+// Randomness in Effect is read from the `Random` SERVICE. The default
+// implementation wraps `Math.random()`; the point is the INDIRECTION, not the
+// generator: a test swaps in a seeded one and replays the exact same sequence
+// every run — the same testability story as `Clock`.
 
 // #region draw
 // Each draw is an Effect. `next` is a float in [0, 1); `nextIntBetween` is an

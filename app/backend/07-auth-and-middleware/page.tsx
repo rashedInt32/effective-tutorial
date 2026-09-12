@@ -1,3 +1,4 @@
+import Link from "next/link"
 import type { Metadata } from "next"
 import { highlightRegions } from "@/lib/code"
 import { CodeFrame } from "@/app/_components/CodeFrame"
@@ -79,11 +80,11 @@ export default async function Lesson() {
       {/* Q3 — the implementation */}
       <Section n="Q3" title="How do I verify the token?">
         <p className="prose-text">
-          The implementation is a <Code>Layer</Code> keyed by scheme name. It
-          receives the decoded <Code>credential</Code> and either{" "}
-          <em>provides</em> <Code>CurrentUser</Code> to the wrapped handler or
-          fails with 401 — and that single failure rejects every protected route
-          at the door.
+          The implementation is a <Code>Layer</Code> whose value is an object with
+          one function per scheme name — here <Code>bearer</Code>. Each receives the
+          wrapped handler and the decoded <Code>credential</Code>, then either{" "}
+          <em>provides</em> <Code>CurrentUser</Code> or fails with 401 — and that
+          single failure rejects every protected route at the door.
         </p>
         <CodeFrame {...snip.implement} filename="auth.ts" lang="ts" />
         <Callout label="This check is a placeholder">
@@ -131,10 +132,22 @@ export default async function Lesson() {
           the double instead, with no handler changing.
         </p>
         <CodeFrame {...snip.serve} filename="server.ts" lang="ts" />
-        <ModuleNote module="HttpApiSecurity">
+        <Callout label="Serving a browser on another origin?">
+          Preflight runs before auth does, so a cross-origin call fails at{" "}
+          <Code>OPTIONS</Code> unless you say otherwise. Merge{" "}
+          <Code>HttpRouter.cors({"{ allowedOrigins: [\"https://app.example.com\"], credentials: true }"})</Code>{" "}
+          beside the API layer — the{" "}
+          <Link href="/backend/http-reference" className="text-cyan hover:underline">
+            http map
+          </Link>{" "}
+          shows the shape.
+        </Callout>
+        <ModuleNote module="HttpApiSecurity / HttpApiClient">
           Beyond <Code>bearer</Code>: <Code>apiKey</Code> (header, query, or
           cookie) and <Code>basic</Code>. The same middleware shape carries each —
-          declare the scheme, receive its decoded credential.
+          declare the scheme, receive its decoded credential. On the calling side,{" "}
+          <Code>HttpApiClient.make(api, {"{ transformClient: HttpClient.mapRequest(HttpClientRequest.bearerToken(token)) }"})</Code>{" "}
+          attaches the token to every request.
         </ModuleNote>
       </Section>
 

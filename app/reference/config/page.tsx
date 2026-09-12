@@ -52,7 +52,8 @@ export default async function Page() {
         <Callout label="Secrets stay secret">
           <Code>Config.redacted</Code> yields a <Code>Redacted&lt;string&gt;</Code>{" "}
           — its value is hidden from logs, stack traces, and accidental{" "}
-          <Code>console.log</Code>s until you explicitly unwrap it.
+          <Code>console.log</Code>s. <Code>Redacted.value(key)</Code> is the one
+          place it comes back out.
         </Callout>
       </Section>
 
@@ -75,8 +76,8 @@ export default async function Page() {
       <Section n="03" title="Read it">
         <p className="prose-text">
           A <Code>Config</Code> is an <Code>Effect</Code>, so you read it with{" "}
-          <Code>yield*</Code> like anything else. Provide the values at the edge and
-          validation happens once, at startup.
+          <Code>yield*</Code> like anything else — which means it is lazy. Yield it
+          once at startup and a bad environment fails before the server listens.
         </p>
         <CodeFrame {...snip.read} filename="config.ts" lang="ts" />
         <Quote label="One source, validated once">
@@ -92,11 +93,14 @@ export default async function Page() {
           <Code>literal</Code>, <Code>duration</Code>, <Code>url</Code>,{" "}
           <Code>date</Code>. Combinators: <Code>option</Code>, <Code>map</Code>,{" "}
           <Code>orElse</Code>, and <Code>Config.schema</Code> to parse through a{" "}
-          <Link href="/backend/03-schemas" className="text-cyan hover:underline">
+          <Link href="/reference/schema" className="text-cyan hover:underline">
             Schema
           </Link>
-          . Where values come from is a <Code>ConfigProvider</Code> (env by
-          default — swap in files or a custom source).
+          . Values come from a <Code>ConfigProvider</Code> —{" "}
+          <Code>fromEnv</Code> by default. Swap in{" "}
+          <Code>ConfigProvider.fromDotEnv()</Code>, <Code>fromDir()</Code> (one
+          file per key), or <Code>fromUnknown(obj)</Code>, and install it with{" "}
+          <Code>ConfigProvider.layer(...)</Code>.
         </ModuleNote>
       </Section>
     </>

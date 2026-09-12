@@ -25,6 +25,7 @@ export default async function Lesson() {
     "status",
     "headers",
     "read-body",
+    "params",
     "routes"
   ])
   // Terminal snippets show an annotated command but copy only the bare command.
@@ -128,8 +129,8 @@ export default async function Lesson() {
       <Section n="Q4" title="How do I set response headers?">
         <p className="prose-text">
           <Code>setHeader</Code> sets one, <Code>setHeaders</Code> merges several.
-          Every response is immutable, so each returns a new one and they chain in
-          a <Code>pipe</Code>.
+          Responses are immutable: each call returns a new one, so they chain in a{" "}
+          <Code>pipe</Code>.
         </p>
         <CodeFrame {...snip.headers} filename="responses.ts" lang="ts" />
         <ModuleNote module="HttpServerResponse">
@@ -160,8 +161,18 @@ export default async function Lesson() {
         </ModuleNote>
       </Section>
 
-      {/* Q6 — register */}
-      <Section n="Q6" title="How do I register these endpoints?">
+      {/* Q6 — path params */}
+      <Section n="Q6" title="How do I read a path parameter?">
+        <p className="prose-text">
+          Write <Code>:id</Code> in the path and the router captures it.{" "}
+          <Code>HttpRouter.params</Code> hands back every captured segment as a
+          string — Lesson 03 shows how to decode them through a schema instead.
+        </p>
+        <CodeFrame {...snip.params} filename="responses.ts" lang="ts" />
+      </Section>
+
+      {/* Q7 — register */}
+      <Section n="Q7" title="How do I register these endpoints?">
         <p className="prose-text">
           <Code>route</Code> builds a route value; <Code>addAll</Code> turns the
           list into the router Layer. Serve it exactly as in{" "}

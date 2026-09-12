@@ -50,10 +50,18 @@ export default async function Lesson() {
         <p className="prose-text">
           <Code>Effect.forkScoped</Code> runs an effect on a new fiber and ties its
           life to the surrounding <Code>Scope</Code>: when the scope closes, the
-          fiber is interrupted. A slow job started inside a request finishes — or
-          is cancelled — with that request. The handler returns immediately.
+          fiber is <strong>interrupted</strong>. A route handler runs in a
+          per-request scope, so a fiber forked here lives exactly as long as the
+          request. That is what you want for work that should stop when the caller
+          leaves — a progress stream, a speculative fetch.
         </p>
         <CodeFrame {...snip.fork} filename="jobs.ts" lang="ts" />
+        <Callout label="This is not where the welcome email goes">
+          Work that must <em>outlive</em> the response can&apos;t be scoped to the
+          request — the scope closes the moment you reply, taking the fiber with it.
+          Put that in the app-scoped <Code>FiberSet</Code> from Q5, or hand it to a
+          queue.
+        </Callout>
         <ModuleNote module="Effect">
           <Code>forkScoped</Code> for scope-bound work, <Code>forkDetach</Code> for
           a true daemon that outlives its parent, and <Code>forkIn</Code> to fork
@@ -86,6 +94,11 @@ export default async function Lesson() {
           fiber is interrupted.
         </p>
         <CodeFrame {...snip.repeat} filename="jobs.ts" lang="ts" />
+        <Callout label="A failure ends the loop">
+          <Code>repeat</Code> stops at the first failure — a crashed sweep would
+          simply never run again. Catch inside the loop body when the schedule
+          should survive one bad run.
+        </Callout>
         <ModuleNote module="Schedule">
           The same policies power <Code>Effect.retry</Code> — see the{" "}
           <Link href="/reference/schedule" className="text-cyan hover:underline">
@@ -100,9 +113,11 @@ export default async function Lesson() {
       <Section n="Q4" title="What about calendar times — every day at 02:00?">
         <p className="prose-text">
           For calendar-based timing, <Code>Schedule.cron</Code> fires on a cron
-          expression. Parse it once at boot — <Code>Cron.parseUnsafe</Code> throws
-          on a bad literal, which is exactly what you want before serving traffic —
-          and repeat against it.
+          expression. <Code>Schedule.cron</Code> takes the string directly, and a
+          bad one fails the effect with <Code>CronParseError</Code>. Parsing up
+          front with <Code>Cron.parseUnsafe</Code> instead throws at{" "}
+          <em>boot</em>, which is what you want for a literal — better than
+          discovering it at 02:00. Always name the zone.
         </p>
         <CodeFrame {...snip.cron} filename="jobs.ts" lang="ts" />
       </Section>
@@ -110,14 +125,25 @@ export default async function Lesson() {
       {/* Q5 — worker layer */}
       <Section n="Q5" title="How do I start and stop it with the app?">
         <p className="prose-text">
-          Package the whole thing as a service <Code>Layer</Code>.{" "}
-          <Code>Layer.effect</Code> runs inside the layer&apos;s <Code>Scope</Code>,
-          so forking the loops into a <Code>FiberSet</Code> means the worker{" "}
-          <strong>starts</strong> when the app boots and <strong>stops</strong> —
-          fibers interrupted, cleanly — when it shuts down. Provide it alongside
-          your server and background work just runs.
+          Package the whole thing as a <Code>Layer</Code> that provides nothing but{" "}
+          <em>owns</em> the fibers. <Code>Layer.effectDiscard</Code> runs inside the
+          layer&apos;s <Code>Scope</Code>, so forking the loops into a{" "}
+          <Code>FiberSet</Code> means the worker <strong>starts</strong> when the
+          app boots and <strong>stops</strong> — fibers interrupted, cleanly — when
+          it shuts down. Provide it alongside your server and background work just
+          runs.
         </p>
         <CodeFrame {...snip.worker} filename="scheduler.ts" lang="ts" />
+        <Callout label="What actually closes the scope">
+          <Code>NodeRuntime.runMain</Code> interrupts the main fiber on{" "}
+          <Code>SIGINT</Code> / <Code>SIGTERM</Code>. That closes the layer scope,
+          so the <Code>FiberSet</Code> interrupts every loop before the process
+          exits. In Next.js the equivalent is disposing the runtime — see the{" "}
+          <Link href="/backend/global-runtime" className="text-cyan hover:underline">
+            global runtime page
+          </Link>
+          .
+        </Callout>
         <Quote label="Lifecycle is the Layer's job">
           Because the fibers live in the layer&apos;s scope, you never write
           start/stop code. The same mechanism that builds the service tears its

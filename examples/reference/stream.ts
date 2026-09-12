@@ -23,7 +23,7 @@ export const pipeline = Stream.range(1, 1_000_000).pipe(
   Stream.map((n) => n + 1),
   Stream.mapEffect(double, { concurrency: 4 }),
   Stream.take(10)
-) // Stream<number> — only ten elements are ever pulled
+) // Stream<number> — stops after the first chunk; the rest is never produced
 // #endregion transform
 
 // #region run
@@ -32,4 +32,5 @@ export const pipeline = Stream.range(1, 1_000_000).pipe(
 // `runDrain` runs purely for the side effects.
 export const collected = Stream.runCollect(pipeline) // Effect<Array<number>>
 export const printed = Stream.runForEach(pipeline, (n) => Effect.log(`${n}`)) // Effect<void>
+export const drained = Stream.runDrain(pipeline) // Effect<void>
 // #endregion run

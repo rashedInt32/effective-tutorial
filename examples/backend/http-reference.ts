@@ -15,7 +15,7 @@ import { createServer } from "node:http"
 // `httpapi` is built ON TOP of. You wire the request → handler → response
 // pipeline by hand: read the request, build a response, register routes on a
 // router, wrap them in middleware, then serve. Every region below typechecks
-// against effect@4 beta.
+// against the installed effect@4.
 
 // #region model
 // The data this server speaks. A `Schema.Class` is one declaration that yields a

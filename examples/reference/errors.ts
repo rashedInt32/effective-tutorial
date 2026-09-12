@@ -47,11 +47,14 @@ export const orDefault = load.pipe(Effect.orElseSucceed(() => "fallback"))
 // #endregion fold
 
 // #region retry
-// Retry typed failures on a policy: a simple count, or a Schedule such as capped
-// exponential backoff. The effect runs once, then the policy governs re-runs.
+// Retry typed failures on a policy: a simple count, or a Schedule. `exponential`
+// alone never stops, so cap it with `upTo`. The effect runs once, then the policy
+// governs re-runs. Defects and interruptions are never retried.
 export const thrice = load.pipe(Effect.retry({ times: 3 }))
 
 export const backoff = load.pipe(
-  Effect.retry(Schedule.exponential(Duration.millis(100)))
+  Effect.retry(
+    Schedule.exponential(Duration.millis(100)).pipe(Schedule.upTo({ times: 5 }))
+  )
 )
 // #endregion retry

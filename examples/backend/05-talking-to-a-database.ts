@@ -5,7 +5,7 @@ import { HttpRouter, HttpServerRespondable, HttpServerResponse } from "effect/un
 // Lesson 04 hid storage behind a `UserRepo` service with an in-memory Map. Now we
 // make it real. `effect/unstable/sql` gives you ONE `SqlClient` service: a safe
 // `sql` tagged template plus typed queries, transactions, and migrations. The
-// core is driver-agnostic — every region here typechecks against effect@4 beta
+// core is driver-agnostic — every region here typechecks against effect@4
 // and only needs a connection layer at the very edge (Postgres or SQLite). The
 // shape from Lesson 04 is unchanged: the repo is still a service you ASK for; we
 // only swap its Layer for one backed by the database.
@@ -80,18 +80,18 @@ export const UserRepoLive = Layer.effect(
     return {
       findById: (id) =>
         // Provide the captured client to the query, then translate its outcomes:
-        // a missing row or a decode failure both become the domain `UserNotFound`
-        // the caller declared; a `SqlError` is infrastructure, not a domain error,
-        // so it becomes a defect via `orDie`.
+        // a missing row becomes the domain `UserNotFound` the caller declared. A
+        // `SqlError`, or a row that fails to decode, is infrastructure — not a
+        // domain error — so `orDie` turns it into a defect.
         findUserQuery(id).pipe(
           Effect.provideService(SqlClient.SqlClient, sql),
           Effect.catchTag("NoSuchElementError", () => Effect.fail(new UserNotFound({ id }))),
-          Effect.catchTag("SchemaError", () => Effect.fail(new UserNotFound({ id }))),
           Effect.orDie
         ),
       create: (name) =>
-        sql`INSERT INTO users ${sql.insert({ name })} RETURNING id, name`.pipe(
-          Effect.map((rows) => new User(rows[0] as { id: number; name: string })),
+        // The template takes a row type, so no cast is needed on the result.
+        sql<{ id: number; name: string }>`INSERT INTO users ${sql.insert({ name })} RETURNING id, name`.pipe(
+          Effect.map((rows) => new User(rows[0])),
           Effect.orDie
         )
     }
@@ -131,7 +131,8 @@ export const safeCreate = (name: string) =>
 // #region migrate
 // Schema lives in code. Each migration is an Effect that uses `sql`; the migrator
 // records which ran and applies only the pending ones, in id order, inside a
-// transaction. Run it once on boot, before serving traffic.
+// transaction. Run it once on boot, before serving traffic. The first call takes
+// dialect hooks such as `dumpSchema` (`{}` = none); the second takes the loader.
 export const runMigrations = Migrator.make({})({
   loader: Migrator.fromRecord({
     "0001_create_users": Effect.flatMap(SqlClient.SqlClient, (sql) =>
@@ -147,13 +148,15 @@ export const runMigrations = Migrator.make({})({
 // turn requires `SqlClient` — so the routes layer's one remaining requirement is
 // a driver. Provide a Postgres or SQLite connection layer at the edge (see the
 // sql whole-map) and migrate on boot, and this is a real database-backed server.
+const UserParams = Schema.Struct({ id: Schema.NumberFromString })
 export const Routes = HttpRouter.addAll([
   HttpRouter.route(
     "GET",
-    "/users/1",
+    "/users/:id",
     Effect.gen(function* () {
+      const { id } = yield* HttpRouter.schemaPathParams(UserParams)
       const repo = yield* UserRepo
-      const user = yield* repo.findById(1) // UserNotFound renders itself as 404
+      const user = yield* repo.findById(id) // UserNotFound renders itself as 404
       return yield* HttpServerResponse.schemaJson(User)(user)
     })
   )

@@ -1,5 +1,5 @@
 import { Context, Effect, Layer, Redacted, Schema } from "effect"
-import { HttpRouter } from "effect/unstable/http"
+import { FetchHttpClient, HttpClient, HttpClientRequest, HttpRouter } from "effect/unstable/http"
 import { NodeHttpServer } from "@effect/platform-node"
 import { createServer } from "node:http"
 import {
@@ -20,7 +20,7 @@ import {
 // A single declarative contract, implemented once, then reused as a server, a
 // typed client, a URL builder, an OpenAPI document, and an in-memory test rig.
 // Declare (Endpoint -> Group -> Api) -> implement (Builder) -> serve / call /
-// document / test. Every region below typechecks against effect@4 beta.
+// document / test. Every region below typechecks against the installed effect@4.
 
 // #region model
 // The data your API speaks. A plain schema-backed class for the success body...
@@ -286,7 +286,8 @@ export const AuthLive = Layer.succeed(Auth, {
 
 // #region client
 // The same `api` generates a fully typed client. Non-topLevel groups are
-// nested; topLevel endpoints sit on the root. Requires an HttpClient.
+// nested; topLevel endpoints sit on the root. It REQUIRES an `HttpClient`, so
+// provide one — `FetchHttpClient.layer` on any platform with fetch.
 export const program = Effect.gen(function* () {
   const client = yield* HttpApiClient.make(api, {
     baseUrl: "https://api.example.com"
@@ -296,7 +297,7 @@ export const program = Effect.gen(function* () {
   const ok = yield* client.health()
 
   return [user, ok] as const
-})
+}).pipe(Effect.provide(FetchHttpClient.layer))
 // #endregion client
 
 // #region urlbuilder
@@ -430,13 +431,22 @@ export const TodosHttpLive = HttpRouter.serve(
 // an in-memory test that needs no server at all.
 export const useTodos = Effect.gen(function* () {
   const client = yield* HttpApiClient.make(todosApi, {
-    baseUrl: "https://api.example.com"
+    baseUrl: "https://api.example.com",
+    // Attach the token on every request.
+    transformClient: HttpClient.mapRequest(HttpClientRequest.bearerToken("secret"))
   })
   return yield* client.todos.addTodo({ payload: { title: "ship it" } })
+}).pipe(Effect.provide(FetchHttpClient.layer)) // the client needs an HttpClient
+
+// Test routes run the REAL middleware, so a test must satisfy `Authn` too —
+// exactly the swap Lesson 07 promised. This double skips token verification and
+// injects a fixed account.
+const AuthnTest = Layer.succeed(Authn, {
+  bearer: (httpEffect) => Effect.provideService(httpEffect, Account, { userId: "test" })
 })
 
 export const todosTest = Effect.gen(function* () {
   const client = yield* HttpApiTest.groups(todosApi, ["todos"])
   return yield* client.todos.listTodos()
-}).pipe(Effect.provide(Layer.provideMerge(TodosLive, AuthnLive)))
+}).pipe(Effect.provide(Layer.provideMerge(TodosLive, AuthnTest)))
 // #endregion capstone-consume

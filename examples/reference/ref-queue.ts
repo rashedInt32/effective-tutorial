@@ -34,12 +34,16 @@ export const pipeline = Effect.gen(function* () {
   const queue = yield* Queue.unbounded<number>()
   const total = yield* Ref.make(0)
 
+  const items = [1, 2, 3]
   const producer = yield* Effect.forkChild(
-    Effect.forEach([1, 2, 3], (n) => Queue.offer(queue, n))
+    Effect.forEach(items, (n) => Queue.offer(queue, n))
   )
   const consumer = yield* Effect.forkChild(
-    Effect.forEach([1, 2, 3], () =>
-      Queue.take(queue).pipe(Effect.flatMap((n) => Ref.update(total, (t) => t + n)))
+    Effect.forEach(items, () =>
+      Effect.gen(function* () {
+        const n = yield* Queue.take(queue)
+        yield* Ref.update(total, (t) => t + n)
+      })
     )
   )
 

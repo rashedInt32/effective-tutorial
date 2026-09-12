@@ -53,7 +53,8 @@ export default async function Page() {
         <CodeFrame {...snip.define} filename="services.ts" lang="ts" />
         <Callout label="Tag = shape">
           You never construct a <Code>Greeter</Code> with <Code>new</Code> — the
-          class is a key. Asking for it hands you the object you declared.
+          class is a key. Asking for it hands you the object you declared. For a
+          one-off call there is also <Code>Greeter.use((g) =&gt; g.greet(&quot;Ada&quot;))</Code>.
         </Callout>
       </Section>
 
@@ -73,9 +74,9 @@ export default async function Page() {
       {/* Implement */}
       <Section n="03" title="Build it with a Layer">
         <p className="prose-text">
-          <Code>Layer.succeed</Code> wraps a ready value; <Code>Layer.effect</Code>{" "}
-          builds one from an Effect — which may itself ask for other services. When
-          it does, that dependency rides along in the layer&apos;s type.
+          <Code>Layer.succeed</Code> wraps a ready value. <Code>Layer.effect</Code>{" "}
+          builds one from an Effect, and if that Effect asks for other services,
+          they show up as the layer&apos;s own requirements.
         </p>
         <CodeFrame {...snip.implement} filename="layers.ts" lang="ts" />
         <Quote label="Layers compose like the effects they build">
@@ -100,11 +101,16 @@ export default async function Page() {
         </p>
         <CodeFrame {...snip.provide} filename="main.ts" lang="ts" />
         <ModuleNote module="Layer / Effect">
-          More wiring: <Code>Layer.scoped</Code> (services that acquire/release a
-          resource), <Code>Layer.merge</Code> / <Code>mergeAll</Code> (combine
-          siblings), <Code>Layer.provideMerge</Code> (wire <em>and</em> keep a layer
-          in the output), and <Code>Effect.provideService</Code> for a single
-          ad-hoc service.
+          More wiring: <Code>Layer.effect</Code> over a scoped acquire (services
+          that own a resource — see{" "}
+          <Link href="/reference/scope" className="text-cyan hover:underline">
+            Scope &amp; resources
+          </Link>
+          ), <Code>Layer.merge</Code> / <Code>mergeAll</Code> (combine siblings),{" "}
+          <Code>Layer.provideMerge</Code> (wire <em>and</em> keep a layer in the
+          output), and <Code>Effect.provideService</Code> for a single ad-hoc
+          service. Both <Code>provide</Code> forms also take an array:{" "}
+          <Code>Layer.provide([LoggerLive, ConfigLive])</Code>.
         </ModuleNote>
       </Section>
     </>

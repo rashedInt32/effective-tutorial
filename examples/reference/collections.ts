@@ -11,7 +11,7 @@ import { Chunk, HashMap, HashSet, Option } from "effect"
 // the edge. Nothing mutates — `append` returns a new chunk.
 export const nums = Chunk.make(1, 2, 3)
 export const doubled = Chunk.map(Chunk.append(nums, 4), (n) => n * 2) // Chunk<number>
-export const asArray = Chunk.toReadonlyArray(doubled) // readonly [2, 4, 6, 8]
+export const asArray = Chunk.toReadonlyArray(doubled) // [2, 4, 6, 8]
 // #endregion chunk
 
 // #region hashmap
@@ -22,6 +22,10 @@ export const prices = HashMap.make(["apple", 3], ["pear", 2])
 export const withBanana = HashMap.set(prices, "banana", 1) // new map; `prices` unchanged
 export const applePrice = HashMap.get(prices, "apple") // Option<number>
 export const orZero = Option.getOrElse(HashMap.get(prices, "kiwi"), () => 0) // 0
+
+// Structural keys really do work: v4 compares plain objects by contents.
+export const byId = HashMap.make([{ id: 1 }, "a"])
+export const found = HashMap.get(byId, { id: 1 }) // Option<string> — Some("a")
 // #endregion hashmap
 
 // #region hashset

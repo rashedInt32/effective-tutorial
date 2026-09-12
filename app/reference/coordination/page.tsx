@@ -32,9 +32,10 @@ export default async function Page() {
         }
       >
         <Quote label="Cooperation without locks">
-          None of these is a mutex you can forget to release. They&apos;re{" "}
-          <span className="text-cyan">structured</span> — acquired and released
-          around an effect, cleaned up on interruption, impossible to leak.
+          Used through <Code>withPermits</Code>, <Code>Pool.use</Code>, and
+          scopes, acquire and release are one <span className="text-cyan">structured</span>{" "}
+          operation — wrapped around an effect, cleaned up on interruption, with
+          nothing to forget.
         </Quote>
       </Hero>
 
@@ -44,9 +45,18 @@ export default async function Page() {
           A <Code>Semaphore</Code> is N permits. <Code>withPermits(k)</Code> takes
           k before running and gives them back after — so even with unbounded
           concurrency, at most N tasks touch the guarded section at once. The cure
-          for &ldquo;don&apos;t hit this API with a thousand calls&rdquo;.
+          for &ldquo;don&apos;t hit this API with a thousand calls&rdquo;. Reach for
+          one over a plain <Code>{"{ concurrency: N }"}</Code> when the limit must
+          be shared across several call sites.
         </p>
         <CodeFrame {...snip.semaphore} filename="coordination.ts" lang="ts" />
+        <ModuleNote module="Semaphore">
+          <Code>withPermit</Code> for a single permit,{" "}
+          <Code>withPermitsIfAvailable</Code> to skip rather than wait, and{" "}
+          <Code>resize</Code> to change the limit at runtime. <Code>take</Code> /{" "}
+          <Code>release</Code> exist for manual control — the one form you{" "}
+          <em>can</em> leak.
+        </ModuleNote>
       </Section>
 
       {/* Deferred */}
@@ -80,12 +90,17 @@ export default async function Page() {
       <Section n="04" title="Pool — share scarce resources">
         <p className="prose-text">
           A <Code>Pool</Code> shares a fixed set of expensive resources — database
-          connections, say. <Code>make</Code> acquires <Code>size</Code> of them up
-          front; <Code>get</Code> borrows one within a scope and returns it
-          automatically when that scope closes. Callers never open or close one by
-          hand.
+          connections, say. <Code>make</Code> starts acquiring <Code>size</Code> of
+          them immediately, in the background. <Code>use</Code> borrows one for a
+          callback; <Code>get</Code> borrows one for the current scope. Either way
+          callers never open or close a connection by hand.
         </p>
         <CodeFrame {...snip.pool} filename="coordination.ts" lang="ts" />
+        <ModuleNote module="Pool">
+          <Code>makeWithTTL</Code> recycles idle items after a duration,{" "}
+          <Code>invalidate</Code> discards a bad one, and a per-item{" "}
+          <Code>concurrency</Code> lets several fibers share one resource.
+        </ModuleNote>
         <Quote label="Resources, bounded and reused">
           A pool caps how many connections exist and recycles them across requests
           — the same{" "}

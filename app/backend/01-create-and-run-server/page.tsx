@@ -54,7 +54,7 @@ export default async function Lesson() {
       title: "The point-free style",
       ...snip["handler-pipe"],
       filename: "handler.ts",
-      desc: "Compose with combinators — no generator. Best for short, branch-free handlers. Adjacent: Effect.map, Effect.as, Effect.zipRight, Effect.tap."
+      desc: "Compose with combinators — no generator. Best for short, branch-free handlers. Adjacent: Effect.map, Effect.as, Effect.andThen, Effect.tap."
     }
   ]
 
@@ -101,7 +101,7 @@ export default async function Lesson() {
           In Effect v4 the HTTP modules live in <Code>effect/unstable/http</Code> —
           there is <strong>no</strong> v4 <Code>@effect/platform</Code> package. The{" "}
           <Code>unstable/</Code> path is intentional: these APIs can still change
-          between beta releases.
+          between pre-release versions.
         </Callout>
       </Section>
 
@@ -109,15 +109,14 @@ export default async function Lesson() {
       <Section n="Q2" title="How do I add my first route?">
         <p className="prose-text">
           A route is just a <strong>Layer</strong> that registers one handler with the
-          router. <Code>HttpServerResponse.text(...)</Code> builds a plain-text reply.
+          router. <Code>HttpServerResponse.text(...)</Code> builds a plain-text reply,
+          and the router accepts it directly.
         </p>
         <CodeFrame {...snip.route} filename="route.ts" lang="ts" />
         <ModuleNote module="HttpRouter">
           <Code>addAll([...])</Code> for many routes, <Code>route()</Code> to build a
-          route value, <Code>prefixPath</Code> to mount a group under a path,{" "}
-          <Code>cors()</Code> / <Code>middleware()</Code> for cross-cutting concerns,
-          and <Code>schemaJson</Code> / <Code>schemaParams</Code> to decode the body
-          &amp; params.
+          route value, <Code>prefixPath</Code> to mount a group under a path.
+          Middleware and schema decoding come in Lessons 03, 04 and 07.
         </ModuleNote>
       </Section>
 
@@ -132,7 +131,9 @@ export default async function Lesson() {
         }
       >
         <p className="prose-text">
-          All three produce the identical <Code>Effect&lt;HttpServerResponse&gt;</Code>.
+          A handler is an Effect that yields an <Code>HttpServerResponse</Code> — or,
+          with <Code>fn</Code>, a function of the request that returns one. The router
+          accepts either shape, so any of these can replace the bare response in Q2.
           Scroll — each style stacks over the last.
         </p>
       </Section>

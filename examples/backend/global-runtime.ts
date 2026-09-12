@@ -4,7 +4,7 @@ import { Cause, Context, Effect, Exit, Layer, ManagedRuntime } from "effect"
 // your services (db, config, loggers). Building the layer per-request is wasteful
 // and breaks resource sharing. The fix: build ONE runtime from your app's layer,
 // once, and run every effect through it. This file is that pattern, end to end —
-// and it all typechecks against effect@4 beta.
+// and it all typechecks against the installed effect@4.
 
 // #region services
 // Your app's services. In a real app this is your database, cache, auth, config —
@@ -81,7 +81,11 @@ export async function GET(request: Request) {
 // #region run-action
 // In a Server Action, prefer `runPromiseExit`: layer-construction AND effect
 // failures come back as a typed `Exit` you branch on, instead of a thrown error.
+// The "use server" directive is what makes this a Server Function — put it at the
+// top of the function (as here) or at the top of a dedicated actions file.
+// Without it this is just an ordinary async export.
 export async function greetAction(id: number) {
+  "use server"
   const exit = await appRuntime.runPromiseExit(Effect.flatMap(Users, (users) => users.byId(id)))
   return Exit.match(exit, {
     onSuccess: (user) => ({ ok: true as const, user }),
@@ -93,10 +97,13 @@ export async function greetAction(id: number) {
 // #region lifecycle
 // `runFork` launches a long-lived effect without awaiting it (background work,
 // warmups). `dispose` closes the runtime's scope and releases every resource the
-// layer acquired — call it from your process shutdown hook.
-export const warmup = appRuntime.runFork(Effect.log("warming caches"))
-
-export const shutdown = () => appRuntime.dispose()
+// layer acquired. Put BOTH in `instrumentation.ts`'s `register()`, which Next
+// calls once per server instance — at module top level a warmup re-runs on every
+// dev re-evaluation, because the globalThis guard dedupes the runtime, not this.
+export function register() {
+  appRuntime.runFork(Effect.log("warming caches"))
+  process.on("SIGTERM", () => appRuntime.dispose())
+}
 // #endregion lifecycle
 
 // #region capstone

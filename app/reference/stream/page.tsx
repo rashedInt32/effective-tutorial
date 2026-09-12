@@ -43,7 +43,8 @@ export default async function Page() {
       {/* Build */}
       <Section n="01" title="Build a stream">
         <p className="prose-text">
-          Start from explicit values, an iterable, a numeric range, or a single{" "}
+          Start from explicit values, an iterable, a numeric range (both ends
+          inclusive), or a single{" "}
           <Code>Effect</Code>. Each is just a description — no elements flow yet.
         </p>
         <CodeFrame {...snip.build} filename="stream.ts" lang="ts" />
@@ -58,12 +59,14 @@ export default async function Page() {
         <p className="prose-text">
           The combinators mirror <Code>Effect</Code>, applied to every element.
           Because a stream is lazy, a pipeline over a million items only does the
-          work the output actually demands.
+          work the output actually demands. Errors flow the same way too: a failing{" "}
+          <Code>mapEffect</Code> ends the stream with that <Code>E</Code>.
         </p>
         <CodeFrame {...snip.transform} filename="stream.ts" lang="ts" />
         <Callout label="Pull, don't push">
-          <Code>take(10)</Code> on a range of a million means exactly ten elements
-          are ever produced — the consumer pulls, so upstream never overproduces.{" "}
+          <Code>take(10)</Code> on a range of a million stops after the first
+          chunk — the consumer pulls, so the remaining ~999,000 items are never
+          produced.{" "}
           <Code>mapEffect</Code> even takes a <Code>concurrency</Code> just like{" "}
           <Link href="/reference/concurrency" className="text-cyan hover:underline">
             Effect.all
@@ -81,6 +84,11 @@ export default async function Page() {
           side effects.
         </p>
         <CodeFrame {...snip.run} filename="stream.ts" lang="ts" />
+        <Callout label="Mind the memory">
+          <Code>runCollect</Code> holds every element in one array. For a large or
+          endless stream, use <Code>runForEach</Code> or <Code>runDrain</Code>{" "}
+          instead.
+        </Callout>
         <ModuleNote module="Stream">
           More: <Code>scan</Code> / <Code>flatMap</Code> / <Code>grouped</Code>{" "}
           (reshape), <Code>throttle</Code> / <Code>buffer</Code> /{" "}

@@ -42,8 +42,8 @@ export default async function Page() {
       <Section n="01" title="Ref — shared mutable state">
         <p className="prose-text">
           <Code>Ref.make</Code> creates a cell; <Code>Ref.get</Code> reads it;{" "}
-          <Code>Ref.update</Code> applies a function atomically. Because the update
-          is atomic, concurrent writers never clobber each other.
+          <Code>Ref.update</Code> applies a function in one atomic step, so
+          concurrent writers never clobber each other.
         </p>
         <CodeFrame {...snip.ref} filename="ref.ts" lang="ts" />
         <Callout label="update vs modify">
@@ -66,7 +66,9 @@ export default async function Page() {
           <Code>bounded</Code> makes <Code>offer</Code> wait when full (true
           back-pressure); <Code>dropping</Code> and <Code>sliding</Code> discard
           instead; <Code>unbounded</Code> never blocks. The capacity is a design
-          decision, not an afterthought.
+          decision, not an afterthought. Note that <Code>offer</Code> answers{" "}
+          <Code>false</Code> when a dropping queue discards — check it if losing
+          items matters.
         </Callout>
       </Section>
 
@@ -89,7 +91,8 @@ export default async function Page() {
           More: <Code>Ref.modify</Code> / <Code>getAndUpdate</Code> /{" "}
           <Code>updateAndGet</Code>; <Code>Queue.offerAll</Code> /{" "}
           <Code>takeAll</Code> / <Code>takeN</Code> / <Code>shutdown</Code> /{" "}
-          <Code>size</Code>; and <Code>PubSub</Code> when you need to{" "}
+          <Code>size</Code> / <Code>end</Code> (no more items — later takes fail
+          with <Code>Cause.Done</Code>); and <Code>PubSub</Code> when you need to{" "}
           <em>broadcast</em> one message to many subscribers instead of handing it
           to one.
         </ModuleNote>
