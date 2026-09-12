@@ -30,7 +30,9 @@ export const search = (email: string, ids: ReadonlyArray<number>) =>
     // sql.in expands a list into (?, ?, ?) with one bound param each
     const byIds = yield* sql`SELECT * FROM users WHERE id IN ${sql.in(ids)}`
 
-    // sql.and joins clauses with AND; a nested sql`...` is a reusable Fragment
+    // sql.and joins clauses with AND; a nested sql`...` is a reusable Fragment.
+    // NOTE: a plain string clause is spliced as RAW SQL — write those yourself,
+    // never from user input. Wrap any value in a nested sql`...` to keep it bound.
     const active = yield* sql`SELECT * FROM users WHERE ${sql.and(["active = true", sql`id IN ${sql.in(ids)}`])}`
 
     return [byEmail, byIds, active] as const

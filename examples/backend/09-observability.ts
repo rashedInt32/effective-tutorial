@@ -4,7 +4,7 @@ import { Effect, Logger, Metric } from "effect"
 // know what you measured. Effect builds the three pillars in — structured logs,
 // distributed traces, and metrics — on the same context that already threads
 // through your program, so adding them is wrapping, not rewiring. Every region
-// typechecks against effect@4 beta.
+// typechecks against the installed effect@4.
 
 // #region log
 // Logging is an Effect, so a log line carries the fiber's context for free.
@@ -52,15 +52,17 @@ export const requests = Metric.counter("http_requests_total", {
   description: "Total HTTP requests served"
 })
 
-export const latency = Metric.histogram("http_request_ms", {
-  description: "Request latency in milliseconds",
-  boundaries: Metric.linearBoundaries({ start: 0, width: 25, count: 8 })
+// `timer` is a histogram of Durations — the histogram you'd otherwise build by
+// hand with `Metric.histogram` + `linearBoundaries`. `Effect.timed` hands back
+// how long the work actually took, so the number is measured, not made up.
+export const latency = Metric.timer("http_request_duration", {
+  description: "Request latency"
 })
 
 export const measured = Effect.gen(function* () {
   yield* Metric.update(requests, 1)
-  const result = yield* doWork
-  yield* Metric.update(latency, 42)
+  const [duration, result] = yield* Effect.timed(doWork)
+  yield* Metric.update(latency, duration)
   return result
 })
 // #endregion metric
@@ -69,11 +71,9 @@ export const measured = Effect.gen(function* () {
 // All three compose as one wrapper. The handler stays about its job; the
 // observability is a pipe at the boundary — a span around it, JSON logs under
 // it, metrics recorded within. Add it once here, get it on every request.
-export const ObservabilityLive = JsonLogging
-
 export const observed = measured.pipe(
   Effect.withSpan("GET /users"),
   Effect.annotateLogs({ route: "GET /users" }),
-  Effect.provide(ObservabilityLive)
+  Effect.provide(JsonLogging)
 )
 // #endregion observable

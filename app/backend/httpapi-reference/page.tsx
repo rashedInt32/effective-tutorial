@@ -44,6 +44,8 @@ HttpApiError.Unauthorized        // 401     HttpApiError.MethodNotAllowed   // 4
 HttpApiError.Forbidden           // 403     HttpApiError.Conflict           // 409
 HttpApiError.Gone                // 410     HttpApiError.NotImplemented     // 501
 HttpApiError.InternalServerError // 500     HttpApiError.ServiceUnavailable // 503
+HttpApiError.NotAcceptable       // 406     HttpApiError.RequestTimeout     // 408
+HttpApiError.UnprocessableEntity // 422  <- the usual choice for validation
 // ...each also has a *NoContent variant (decodes an empty body into the error)`
 
 const ATTACH = `endpoint.middleware(Authorization)   // one route
@@ -136,8 +138,10 @@ export default async function Page() {
       {/* Imports */}
       <Section n="00" title="What you import">
         <p className="prose-text">
-          Two sources only: data types and combinators from <Code>effect</Code>,
-          and the API modules from <Code>effect/unstable/httpapi</Code>.
+          Two sources for the contract — data types and combinators from{" "}
+          <Code>effect</Code>, and the API modules from{" "}
+          <Code>effect/unstable/httpapi</Code> — plus the http layer you serve or
+          call it on.
         </p>
         <CodeFrame {...menu.imports} filename="imports.ts" lang="ts" />
       </Section>
@@ -186,7 +190,9 @@ export default async function Page() {
         </p>
         <CodeFrame {...menu.encodings} filename="HttpApiSchema" lang="ts" />
         <Quote label="Defaults worth memorizing">
-          Success without a status is <Code>200</Code>; an error without one is{" "}
+          An endpoint with no <Code>success</Code> at all responds{" "}
+          <Code>204</Code>; a <Code>success</Code> schema without a status
+          annotation responds <Code>200</Code>; an error without one is{" "}
           <Code>500</Code>; a body without an encoding is{" "}
           <span className="text-violet">JSON</span>. Multipart is{" "}
           <strong className="text-foreground">payload-only</strong> — a
@@ -233,7 +239,8 @@ export default async function Page() {
         <ModuleNote module="HttpApiError">
           Request decoding failures surface as <Code>HttpApiSchemaError</Code>{" "}
           (responds <Code>400</Code>, with a <Code>kind</Code> of{" "}
-          <Code>Params | Headers | Query | Body | Payload</Code>) — catch and
+          <Code>Params | Headers | Query | Body | Payload | ResponseHeaders</Code>)
+          — catch and
           reshape it with middleware if you want a custom envelope.
         </ModuleNote>
       </Section>

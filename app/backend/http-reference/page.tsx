@@ -16,7 +16,7 @@ const FILE = "backend/http-reference.ts"
    live inline (the same way the other lessons inline their curl snippets).
    Unlike the numbered examples below, these are hand-written, not lifted from
    the typechecked source file. */
-const IMPORTS = `import { Context, Effect, Layer, Schema } from "effect"
+const IMPORTS = `import { Context, Effect, Layer, Schedule, Schema } from "effect"
 import {
   HttpRouter, HttpServerRequest, HttpServerResponse, HttpServerRespondable,
   HttpMiddleware, HttpServerError, Headers, Cookies,
@@ -32,7 +32,7 @@ request.cookies         // Record<string, string>
 request.remoteAddress   // Option<string>
 
 request.text            // Effect<string, HttpServerError>
-request.json            // Effect<unknown, HttpServerError>
+request.json            // Effect<Schema.Json, HttpServerError>
 request.arrayBuffer     // Effect<ArrayBuffer, HttpServerError>
 request.stream          // Stream<Uint8Array, HttpServerError>
 
@@ -201,8 +201,7 @@ export default async function Page() {
         <p className="prose-text">
           A route binds a method + path to a handler. <Code>add</Code> registers
           one route as a <Code>Layer</Code>; <Code>route</Code> builds a value and{" "}
-          <Code>addAll</Code> batches several. Mounting the same path twice — last
-          one wins.
+          <Code>addAll</Code> batches several.
         </p>
         <CodeFrame {...snip.router} filename="router.ts" lang="ts" />
         <CodeFrame {...menu.methods} filename="HttpRouter" lang="ts" />
@@ -214,7 +213,10 @@ export default async function Page() {
           A <Code>:name</Code> segment is captured. Read the raw record with{" "}
           <Code>HttpRouter.params</Code>, or decode it through a schema with{" "}
           <Code>schemaParams</Code> for typed values — the router provides the
-          param context automatically, so neither leaks into your requirements.
+          param context automatically, so neither leaks into your requirements. The
+          last route in this snippet uses <Code>*</Code> for any method and{" "}
+          <Code>/*</Code> for any path: a catch-all that runs when nothing else
+          matches.
         </p>
         <CodeFrame {...snip.params} filename="params.ts" lang="ts" />
         <ModuleNote module="HttpRouter">

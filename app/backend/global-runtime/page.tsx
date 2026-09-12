@@ -22,15 +22,16 @@ const IMPORTS = `import { Cause, Context, Effect, Exit, Layer, ManagedRuntime } 
 
 const RUNNERS = `runtime.runPromise(effect)       // Promise<A>            — the everyday runner
 runtime.runPromiseExit(effect)   // Promise<Exit<A, ER | E>>  — failures as data
-runtime.runFork(effect)          // Fiber<A, E>           — fire-and-forget / background
+runtime.runFork(effect)          // Fiber<A, ER | E>      — fire-and-forget / background
 runtime.runSync(effect)          // A                     — only for sync effects
 runtime.runSyncExit(effect)      // Exit<A, ER | E>
-runtime.runCallback(effect, { onExit })   // node-style callback bridge
+runtime.runCallback(effect, { onExit })   // Exit callback; returns a cancel fn
 
 runtime.context()                // Promise<Context<R>>  — the built services
 runtime.dispose()                // Promise<void>        — close scope, free resources
 
-// ER = the layer's construction error — folded into every *Exit runner's error.`
+// ER = the layer's construction error — present in every runner's failure,
+//      whether that arrives as an Exit, a Fiber, or a rejected Promise.`
 
 export default async function Page() {
   // File-backed snippets — every one is lifted from a region that typechecks.
@@ -102,9 +103,10 @@ export default async function Page() {
       <Section n="02" title="One layer for the whole app">
         <p className="prose-text">
           Each service gets a <Code>Layer</Code>; <Code>mergeAll</Code> composes
-          them into one. The crucial property: nothing is left unprovided, so its
-          requirements (<Code>RIn</Code>) are <Code>never</Code> — that&apos;s the
-          precondition for a runnable runtime.
+          them into one. The crucial property: nothing is left unprovided, so the
+          layer&apos;s requirement type is <Code>never</Code> — exactly what{" "}
+          <Code>ManagedRuntime.make</Code> demands, and the precondition for a
+          runnable runtime.
         </p>
         <CodeFrame {...snip.layer} filename="lib/runtime.ts" lang="ts" />
         <Callout label="This is the join point">
@@ -169,13 +171,24 @@ export default async function Page() {
           server/client boundary.
         </p>
         <CodeFrame {...snip["run-action"]} filename="app/actions.ts" lang="ts" />
+        <Callout label="A Server Function is a public endpoint">
+          The <Code>&quot;use server&quot;</Code> directive is what makes this
+          callable from the client — and anyone can POST to it directly. Check
+          authentication inside every action; the <Code>CurrentUser</Code> check
+          from{" "}
+          <Link href="/backend/07-auth-and-middleware" className="text-cyan hover:underline">
+            Lesson 07
+          </Link>{" "}
+          belongs here too.
+        </Callout>
         <p className="prose-text">The full set of runners, by what they return:</p>
         <CodeFrame {...menu.runners} filename="ManagedRuntime" lang="ts" />
         <ModuleNote module="ManagedRuntime">
-          The layer&apos;s construction error <Code>ER</Code> is folded into the
-          error channel of every <Code>*Exit</Code> runner — so a failed DB
-          connection surfaces in the same <Code>Exit</Code> as your effect&apos;s
-          own errors, not as a surprise throw.
+          The layer&apos;s construction error <Code>ER</Code> joins the error
+          channel of <em>every</em> runner — the <Code>Exit</Code> forms, the
+          fiber from <Code>runFork</Code>, and the rejected promise from{" "}
+          <Code>runPromise</Code>. A failed DB connection surfaces alongside your
+          effect&apos;s own errors rather than as a surprise throw.
         </ModuleNote>
       </Section>
 
@@ -184,10 +197,19 @@ export default async function Page() {
         <p className="prose-text">
           <Code>runFork</Code> launches a long-lived effect without awaiting it —
           warmups, subscriptions, background loops. <Code>dispose</Code> closes
-          the runtime&apos;s scope and releases every resource the layer acquired;
-          wire it to your process shutdown hook.
+          the runtime&apos;s scope and releases every resource the layer acquired.
+          Put both in <Code>instrumentation.ts</Code>, whose <Code>register()</Code>{" "}
+          Next calls once per server instance. At module top level a warmup would
+          re-run on every dev re-evaluation, because the <Code>globalThis</Code>{" "}
+          guard dedupes the runtime, not the side effect beside it.
         </p>
-        <CodeFrame {...snip.lifecycle} filename="lib/runtime.ts" lang="ts" />
+        <CodeFrame {...snip.lifecycle} filename="instrumentation.ts" lang="ts" />
+        <Callout label="Best effort on shutdown">
+          Next drains in-flight requests itself on <Code>SIGINT</Code> /{" "}
+          <Code>SIGTERM</Code>. The App Router documents no user shutdown hook, so
+          treat <Code>dispose()</Code> as best-effort cleanup rather than a
+          guarantee.
+        </Callout>
         <Callout label="One scope to close">
           Because the runtime owns the layer&apos;s scope, a single{" "}
           <Code>dispose()</Code> tears down pools, file handles, and forked fibers

@@ -15,7 +15,7 @@ const FILE = "backend/sql-reference.ts"
 
 /* Hand-curated reference menus — enumerations and the driver connect layers
    (the driver packages aren't installed here, so these are faithful, not
-   typechecked — copied from the effect-smol source). */
+   typechecked — transcribed from repos/effect/packages/sql/{pg,sqlite-node}). */
 const IMPORTS = `import { Effect, Schema } from "effect"
 import { Model } from "effect/unstable/schema"
 import {
@@ -149,7 +149,11 @@ export default async function Page() {
           <em>fragment</em> that splices in as SQL. <Code>sql.in</Code>,{" "}
           <Code>sql.and</Code>, <Code>sql.or</Code>, and{" "}
           <Code>sql.insert</Code>/<Code>sql.update</Code> produce fragments for the
-          clauses you&apos;d otherwise hand-assemble.
+          clauses you&apos;d otherwise hand-assemble. One caveat: a plain{" "}
+          <strong>string</strong> handed to <Code>sql.and</Code> /{" "}
+          <Code>sql.or</Code> is raw SQL, not a parameter. Write those yourself and
+          never from input — wrap any value in a nested <Code>sql`...`</Code> to
+          keep it bound.
         </Quote>
       </Section>
 
@@ -221,7 +225,8 @@ export default async function Page() {
           <Code>update</Code> shape, a json api shape — from per-field helpers.{" "}
           <Code>SqlModel.makeRepository</Code> then hands you typed{" "}
           <Code>insert</Code> / <Code>update</Code> / <Code>findById</Code> /{" "}
-          <Code>delete</Code>.
+          <Code>delete</Code>, plus <Code>insertVoid</Code> /{" "}
+          <Code>updateVoid</Code> when you don&apos;t need the row back.
         </p>
         <CodeFrame {...snip.model} filename="user-model.ts" lang="ts" />
         <ModuleNote module="Model">
@@ -242,7 +247,9 @@ export default async function Page() {
         <CodeFrame {...snip.migrator} filename="migrate.ts" lang="ts" />
         <ModuleNote module="Migrator">
           <Code>fromRecord</Code> takes inline migrations (shown here);{" "}
-          <Code>fromFileSystem</Code> reads a directory of numbered files;{" "}
+          <Code>fromFileSystem</Code> reads a directory of numbered files (it
+          needs the platform <Code>FileSystem</Code> and <Code>Path</Code>{" "}
+          services);{" "}
           <Code>fromGlob</Code> takes dynamic <Code>import()</Code>s — handy when
           the bundler must see them.
         </ModuleNote>

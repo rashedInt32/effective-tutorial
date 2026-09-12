@@ -66,7 +66,7 @@ export default async function Lesson() {
           machine-readable ones: <Code>Logger.layer([Logger.consoleJson])</Code>{" "}
           swaps the logger app-wide for structured JSON — the same{" "}
           <Code>logInfo</Code> calls, now emitted with their level, timestamp,
-          annotations, and spans as JSON your aggregator can index.
+          fiber id, and annotations as JSON your aggregator can index.
         </p>
         <CodeFrame {...snip.install} filename="logging.ts" lang="ts" />
         <Callout label="Swap the logger, not the call sites">
@@ -97,10 +97,12 @@ export default async function Lesson() {
       <Section n="Q4" title="How do I track rates and latencies?">
         <p className="prose-text">
           Metrics are cheap aggregates over time. A <Code>counter</Code> only goes
-          up (requests served); a <Code>histogram</Code> records a distribution
-          (latencies into buckets). <Code>Metric.update</Code> feeds a data point;
-          the runtime keeps the running aggregate, ready to scrape — no per-event
-          storage, unlike logs.
+          up (requests served); a <Code>histogram</Code> records a distribution, and{" "}
+          <Code>Metric.timer</Code> is the ready-made histogram of durations.{" "}
+          <Code>Metric.update</Code> feeds a data point; the runtime keeps the
+          running aggregate, ready to scrape — no per-event storage, unlike logs.
+          Pair it with <Code>Effect.timed</Code> so the number is measured, not
+          guessed.
         </p>
         <CodeFrame {...snip.metric} filename="handler.ts" lang="ts" />
       </Section>

@@ -1,4 +1,4 @@
-import { Context, Effect, Exit, Fiber, Layer, Schema } from "effect"
+import { Cause, Context, Effect, Exit, Fiber, Layer, Schema } from "effect"
 import { TestClock } from "effect/testing"
 import { expect, it } from "vitest"
 
@@ -6,8 +6,7 @@ import { expect, it } from "vitest"
 // importing a database, a test can hand it a different `Layer` and run the
 // byte-for-byte production program with no server and no DB. This lesson cashes
 // that in. No `@effect/vitest` — just plain `vitest` (`it`/`expect`), core
-// `effect`, and `effect/testing` for a clock you control. Every region
-// typechecks against effect@4 beta.
+// `effect`, and `effect/testing` for a clock you control.
 
 // #region define
 // The same service + value + typed failure as Lessons 04/05, restated so this
@@ -58,11 +57,12 @@ it("finds a user by id", async () => {
 // #region failure
 // The failure path is data, not an exception — so don't assert with try/catch.
 // `runPromiseExit` always resolves, to an `Exit` that is either a success or a
-// typed failure. `Exit.isFailure` narrows it, and the declared `UserNotFound`
-// is right there in the cause to assert on.
+// typed failure. `Exit.isFailure` narrows it, and `Cause.squash` pulls the
+// declared `UserNotFound` out of the cause — assert on the error itself, not
+// just on "something went wrong".
 it("fails with UserNotFound for a missing id", async () => {
   const exit = await Effect.runPromiseExit(lookup(999).pipe(Effect.provide(UserRepoTest)))
-  expect(Exit.isFailure(exit)).toBe(true)
+  expect(Exit.isFailure(exit) && Cause.squash(exit.cause)).toBeInstanceOf(UserNotFound)
 })
 // #endregion failure
 
@@ -72,7 +72,7 @@ it("fails with UserNotFound for a missing id", async () => {
 // that waits, jump the clock past the deadline, and join — the timeout fires
 // with no real waiting. A 30-second deadline is verified in microseconds.
 const slowFetch = Effect.as(Effect.sleep("30 seconds"), "data")
-const withDeadline = Effect.timeout(slowFetch, "5 seconds") // fails: TimeoutException
+const withDeadline = Effect.timeout(slowFetch, "5 seconds") // fails with Cause.TimeoutError
 
 it("gives up after the deadline", async () => {
   const program = Effect.gen(function* () {
