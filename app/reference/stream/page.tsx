@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const FILE = "reference/stream.ts"
 
 export default async function Page() {
-  const snip = await highlightRegions(FILE, ["build", "transform", "run"])
+  const snip = await highlightRegions(FILE, ["build", "transform", "run", "sink"])
 
   return (
     <>
@@ -99,6 +99,29 @@ export default async function Page() {
             Effect
           </Link>
           .
+        </ModuleNote>
+      </Section>
+
+      {/* Sink */}
+      <Section n="04" title="Sink — a composable consumer">
+        <p className="prose-text">
+          The <Code>run*</Code> functions are shorthands for one general form:{" "}
+          <Code>Stream.run</Code> with a <Code>Sink</Code>. Where a stream
+          describes <em>producing</em> values, a sink describes folding them into
+          a single result — and because sinks are values, you build new ones from
+          old.
+        </p>
+        <CodeFrame {...snip.sink} filename="stream.ts" lang="ts" />
+        <Callout label="One pass, no intermediate array">
+          The average here folds sum and count together as the elements arrive.
+          Nothing accumulates in memory, and the stream is traversed once.
+        </Callout>
+        <ModuleNote module="Sink">
+          <Code>Sink.sum</Code>, <Code>count</Code>, <Code>head</Code> /{" "}
+          <Code>last</Code> (each an <Code>Option</Code>), <Code>collect</Code>,
+          and <Code>forEach</Code> cover the common endings.{" "}
+          <Code>Sink.reduce</Code> / <Code>fold</Code> build a custom one, and{" "}
+          <Code>map</Code> / <Code>mapEffect</Code> reshape the result.
         </ModuleNote>
       </Section>
     </>

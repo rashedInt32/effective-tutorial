@@ -1,4 +1,4 @@
-import { Effect, Stream } from "effect"
+import { Effect, Sink, Stream } from "effect"
 
 // A `Stream<A, E, R>` is a pull-based sequence of zero-or-more `A`s — think of it
 // as an Effect that yields many results over time. It's lazy and resource-safe:
@@ -34,3 +34,20 @@ export const collected = Stream.runCollect(pipeline) // Effect<Array<number>>
 export const printed = Stream.runForEach(pipeline, (n) => Effect.log(`${n}`)) // Effect<void>
 export const drained = Stream.runDrain(pipeline) // Effect<void>
 // #endregion run
+
+// #region sink
+// The `run*` functions are shorthands for the general form: `Stream.run` with a
+// `Sink`. A Sink is a reusable, COMPOSABLE consumer — where a stream describes
+// producing values, a sink describes folding them into one result.
+export const total = Stream.run(pipeline, Sink.sum) //            Effect<number>
+export const howMany = Stream.run(pipeline, Sink.count) //        Effect<number>
+
+// Because sinks are values, you build new ones from old. This averages in a
+// single pass — no intermediate array, no second traversal.
+const average = Sink.reduce(
+  () => [0, 0] as [number, number],
+  ([sum, n]: [number, number], x: number) => [sum + x, n + 1] as [number, number]
+).pipe(Sink.map(([sum, n]) => (n === 0 ? 0 : sum / n)))
+
+export const mean = Stream.run(pipeline, average) // Effect<number>
+// #endregion sink
