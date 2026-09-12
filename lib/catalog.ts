@@ -255,7 +255,7 @@ const frontendData = [
     n: "12",
     title: "Services in the browser",
     desc: "Atom.runtime gives atoms a Layer — the same swap that made the backend testable.",
-    ready: false
+    ready: true
   },
   {
     slug: "13-one-contract-both-ends",
