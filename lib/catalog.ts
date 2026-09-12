@@ -120,6 +120,12 @@ const fieldGuideData = [
     ready: true
   },
   {
+    slug: "cause-exit",
+    title: "Exit & Cause",
+    desc: "How an Effect ends, as a value — success, typed failure, defect, or interruption.",
+    ready: true
+  },
+  {
     slug: "errors",
     title: "Fail & recover",
     desc: "Typed errors vs defects, catching by tag, folding to a value, and retry policies.",

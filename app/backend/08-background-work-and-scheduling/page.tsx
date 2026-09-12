@@ -82,6 +82,14 @@ export default async function Lesson() {
           The set owns its fibers. You never track them by hand or risk leaking one
           — closing the scope tears the whole group down at once.
         </Callout>
+        <ModuleNote module="FiberSet / FiberMap / FiberHandle">
+          Three shapes of the same idea, all scope-owned. A{" "}
+          <Code>FiberSet</Code> holds many anonymous fibers. A{" "}
+          <Code>FiberMap</Code> keys them, so you can replace or interrupt one job
+          by id — a per-user subscription, say. A <Code>FiberHandle</Code> holds{" "}
+          <em>at most one</em>, interrupting the previous fiber when you set a new
+          one, which is exactly what a debounced or restartable task needs.
+        </ModuleNote>
       </Section>
 
       {/* Q3 — repeat */}

@@ -49,6 +49,22 @@ export const transformed = Effect.succeed(10).pipe(
 ) // Effect<"done">
 // #endregion transform
 
+// #region fn
+// `Effect.fn` defines a function whose body is a generator — and NAMES it. That
+// name becomes a real tracing span around every call, and shows up in stack
+// traces, so a failure points at `loadUser` instead of an anonymous frame.
+export const loadUser = Effect.fn("loadUser")(function* (id: number) {
+  yield* Effect.log(`loading ${id}`)
+  return { id, name: "Ada Lovelace" }
+})
+
+// `fnUntraced` is the same shape with no span — reach for it on a hot path
+// where you don't want the tracing overhead.
+export const addFast = Effect.fnUntraced(function* (a: number, b: number) {
+  return a + b
+})
+// #endregion fn
+
 // #region run
 // At the edge of the app, hand a description to a runner. `runSync` for purely
 // synchronous effects, `runPromise` for async, `runFork` for a background fiber

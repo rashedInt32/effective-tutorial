@@ -18,6 +18,7 @@ import {
   Server,
   Shapes,
   ShieldAlert,
+  Split,
   ShieldCheck,
   SlidersHorizontal,
   Timer,
@@ -46,6 +47,7 @@ const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
   "global-runtime": Globe,
   // field guide
   effect: Zap,
+  "cause-exit": Split,
   errors: ShieldAlert,
   layers: Layers,
   concurrency: Waypoints,
