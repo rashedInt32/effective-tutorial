@@ -1,4 +1,4 @@
-import { Effect, Logger, Metric } from "effect"
+import { Effect, Logger, Metric, References } from "effect"
 
 // "It works on my machine" ends where production begins; after that you only
 // know what you measured. Effect builds the three pillars in — structured logs,
@@ -29,6 +29,23 @@ export const JsonLogging = Logger.layer([Logger.consoleJson])
 
 export const runnable = handle.pipe(Effect.provide(JsonLogging))
 // #endregion install
+
+// #region levels
+// Every log line has a LEVEL, and in production you don't want them all.
+// `MinimumLogLevel` is a reference you set like any other service: anything
+// below it is dropped before a logger ever sees it. The order runs
+// All < Trace < Debug < Info < Warn < Error < Fatal < None.
+export const quieter = handle.pipe(
+  Effect.provideService(References.MinimumLogLevel, "Warn")
+) // the two logInfo lines above are now filtered out
+
+// Scope it to part of the program instead, to debug one noisy path in isolation.
+export const verboseHere = Effect.provideService(
+  doWork,
+  References.MinimumLogLevel,
+  "Debug"
+)
+// #endregion levels
 
 // #region span
 // A span is a timed, named, nestable unit of work — the backbone of tracing.

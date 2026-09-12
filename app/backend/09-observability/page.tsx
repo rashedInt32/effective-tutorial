@@ -18,6 +18,7 @@ export default async function Lesson() {
   const snip = await highlightRegions(FILE, [
     "log",
     "install",
+    "levels",
     "span",
     "metric",
     "observable"
@@ -76,8 +77,27 @@ export default async function Lesson() {
         </Callout>
       </Section>
 
-      {/* Q3 — spans */}
-      <Section n="Q3" title="How do I trace a request?">
+      {/* Q3 — levels */}
+      <Section n="Q3" title="How do I turn the noise down?">
+        <p className="prose-text">
+          Every line has a <strong>level</strong>, and production rarely wants all
+          of them. <Code>MinimumLogLevel</Code> is a reference you provide like any
+          service: anything below it is dropped before a logger sees it. Scope it
+          to one part of the program to debug a noisy path without drowning the
+          rest.
+        </p>
+        <CodeFrame {...snip.levels} filename="logging.ts" lang="ts" />
+        <Callout label="The order">
+          <Code>All</Code> &lt; <Code>Trace</Code> &lt; <Code>Debug</Code> &lt;{" "}
+          <Code>Info</Code> &lt; <Code>Warn</Code> &lt; <Code>Error</Code> &lt;{" "}
+          <Code>Fatal</Code> &lt; <Code>None</Code>. Set it to <Code>Warn</Code>{" "}
+          and the <Code>logInfo</Code> calls above stop emitting — no code change,
+          no commented-out lines.
+        </Callout>
+      </Section>
+
+      {/* Q4 — spans */}
+      <Section n="Q4" title="How do I trace a request?">
         <p className="prose-text">
           A span is a timed, named, nestable unit of work — the backbone of
           tracing. <Code>withSpan</Code> wraps any effect in one;{" "}
@@ -93,8 +113,8 @@ export default async function Lesson() {
         </ModuleNote>
       </Section>
 
-      {/* Q4 — metrics */}
-      <Section n="Q4" title="How do I track rates and latencies?">
+      {/* Q5 — metrics */}
+      <Section n="Q5" title="How do I track rates and latencies?">
         <p className="prose-text">
           Metrics are cheap aggregates over time. A <Code>counter</Code> only goes
           up (requests served); a <Code>histogram</Code> records a distribution, and{" "}
@@ -107,8 +127,8 @@ export default async function Lesson() {
         <CodeFrame {...snip.metric} filename="handler.ts" lang="ts" />
       </Section>
 
-      {/* Q5 — compose */}
-      <Section n="Q5" title="How do they fit together?">
+      {/* Q6 — compose */}
+      <Section n="Q6" title="How do they fit together?">
         <p className="prose-text">
           As one wrapper. The handler stays about its job; observability is a pipe
           at the boundary — a span around it, JSON logs under it, metrics recorded
