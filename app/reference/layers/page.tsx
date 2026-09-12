@@ -18,7 +18,8 @@ export default async function Page() {
     "define",
     "use",
     "implement",
-    "provide"
+    "provide",
+    "memo"
   ])
 
   return (
@@ -100,6 +101,22 @@ export default async function Page() {
           .
         </p>
         <CodeFrame {...snip.provide} filename="main.ts" lang="ts" />
+      </Section>
+
+      {/* Memoization */}
+      <Section n="05" title="One layer, built once">
+        <p className="prose-text">
+          A <Code>Layer</Code> value is <strong>memoized</strong>: however many
+          things depend on it, it is constructed once and shared. That is what
+          keeps a connection pool from quietly becoming two pools when a second
+          service asks for it.
+        </p>
+        <CodeFrame {...snip.memo} filename="layers.ts" lang="ts" />
+        <Callout label="Sharing is per value, not per type">
+          Two <em>separate</em> layer values that build the same service are two
+          separate builds. And when you deliberately want a second instance,{" "}
+          <Code>Layer.fresh</Code> opts out of the sharing.
+        </Callout>
         <ModuleNote module="Layer / Effect">
           More wiring: <Code>Layer.effect</Code> over a scoped acquire (services
           that own a resource — see{" "}

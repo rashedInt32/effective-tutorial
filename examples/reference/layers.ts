@@ -51,3 +51,32 @@ const AppLive = GreeterLive.pipe(Layer.provide(LoggerLive)) // Layer<Greeter>
 
 export const runnable = program.pipe(Effect.provide(AppLive)) // Effect<void>
 // #endregion provide
+
+// #region memo
+// One Layer VALUE builds once, no matter how many layers depend on it. Here two
+// services both need Logger, but `LoggerLive` is constructed a single time and
+// SHARED — so a connection pool doesn't quietly become two pools.
+class Audit extends Context.Service<Audit, {
+  readonly record: (event: string) => Effect.Effect<void>
+}>()("app/Audit") {}
+
+const AuditLive = Layer.effect(
+  Audit,
+  Effect.gen(function* () {
+    const logger = yield* Logger
+    return { record: (event: string) => logger.log(`audit: ${event}`) }
+  })
+)
+
+// Greeter and Audit each ask for Logger; LoggerLive still runs exactly once.
+export const SharedLive = Layer.mergeAll(GreeterLive, AuditLive).pipe(
+  Layer.provide(LoggerLive)
+)
+
+// Want a SECOND, independent instance on purpose? `Layer.fresh` opts out of the
+// sharing — the wrapped layer is built again rather than reused.
+export const SeparateLive = Layer.mergeAll(
+  GreeterLive.pipe(Layer.provide(Layer.fresh(LoggerLive))),
+  AuditLive.pipe(Layer.provide(Layer.fresh(LoggerLive)))
+)
+// #endregion memo
