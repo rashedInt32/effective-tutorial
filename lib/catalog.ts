@@ -4,7 +4,6 @@
    numbering, and routes can never drift apart. */
 
 export type CatalogPage = {
-  /** Route segment, and the example filename stem. */
   slug: string
   /** Full route, derived from the slug — use this for links. */
   href: string

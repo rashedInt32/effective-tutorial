@@ -37,16 +37,12 @@ import {
   wholeMaps
 } from "@/lib/catalog"
 
-/* A fitting icon per reference card, keyed by slug. Lessons keep their numeral;
-   the whole-map and field-guide cards each get a distinct topic icon. The key
-   union makes the compiler reject a missing or stale slug. */
+// Topic icon per reference card. The key union rejects a stale or missing slug.
 const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
-  // whole map
   "http-reference": Server,
   "httpapi-reference": Webhook,
   "sql-reference": Database,
   "global-runtime": Globe,
-  // field guide
   effect: Zap,
   "cause-exit": Split,
   errors: ShieldAlert,
@@ -72,7 +68,6 @@ const ICONS: Record<WholeMapSlug | FieldGuideSlug, LucideIcon> = {
 export default function Home() {
   return (
     <main className="relative mx-auto w-full max-w-6xl px-6 py-24 sm:py-28">
-      {/* Hero */}
       <Reveal>
         <p className="text-sm font-mono uppercase tracking-[0.3em] text-cyan/80">
           Effect v4 · learn by doing
@@ -87,7 +82,6 @@ export default function Home() {
         </p>
       </Reveal>
 
-      {/* Lessons — the sequential path */}
       <Group
         kicker="The path"
         title="Lessons"
@@ -107,7 +101,6 @@ export default function Home() {
         ))}
       </Group>
 
-      {/* Frontend lessons — the second track */}
       <Group
         kicker="The path · frontend"
         title="In the browser"
@@ -127,7 +120,6 @@ export default function Home() {
         ))}
       </Group>
 
-      {/* Whole-map references */}
       <Group
         kicker="Backend reference"
         title="The whole map"
@@ -147,7 +139,6 @@ export default function Home() {
         ))}
       </Group>
 
-      {/* Reference field guide */}
       <Group
         kicker="Reference"
         title="Field guide"
@@ -170,7 +161,6 @@ export default function Home() {
   )
 }
 
-/** A titled section with its eyebrow + blurb and a responsive box grid. */
 function Group({
   kicker,
   title,
@@ -194,8 +184,6 @@ function Group({
   )
 }
 
-/** One box in the grid: a glassy card with a corner marker — a ghost numeral for
-    lessons, or a topic icon for the reference cards. */
 function CatalogCard({
   href,
   mark,
@@ -253,9 +241,7 @@ function CatalogCard({
     </>
   )
 
-  // Same surface as .glass but without backdrop-filter — 18 of these on the
-  // home grid would each re-blur their backdrop, for no visible difference
-  // over the near-black page.
+  // .glass without backdrop-filter: 18 blurs on one grid, no visible gain.
   const cardClass =
     "relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.045] to-white/[0.015] p-6"
 
