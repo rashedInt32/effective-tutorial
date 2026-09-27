@@ -173,8 +173,8 @@ export default async function Lesson() {
         <CodeFrame {...snip["seed-and-refetch"]} filename="Todos.tsx" lang="ts" />
         <Callout label="Measured, not inferred">
           Both wrong versions of this section typechecked and looked right in
-          the browser. The table above comes from counting Effect runs on a
-          production build, twice from a clean build. If you change how you seed,
+          the browser. The table above comes from counting Effect runs across
+          three production builds, which agreed. If you change how you seed,
           count again.
         </Callout>
       </Section>

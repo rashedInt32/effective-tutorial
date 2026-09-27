@@ -28,8 +28,9 @@ Source: `repos/effect/packages/effect/src/unstable/reactivity/AtomRegistry.ts`
 
 ## Why the counter read 3, not 2
 
-Not reproduced as 3. A six-panel probe page, each panel its own atom and
-counter, gave the same numbers on two clean production builds:
+Not re-measured in the original shared-counter setup. A six-panel probe page,
+each panel its own atom and counter, gave the same numbers across three
+production builds (the last from a wiped `.next`):
 
 | panel | first load (hydration) | each reset |
 |---|---|---|
@@ -49,8 +50,10 @@ node from scratch. `Atom.keepAlive` removes the run in both affected rows, which
 is what confirms the cause. The suspense path is not affected because the
 thrown promise keeps a subscription on the node.
 
-The original demo's shared counter probably picked up one such extra run; the
-two-panel configuration it used measures 2 on the probe.
+The probe did not recreate the original demo's single shared counter, so the
+3 is unexplained rather than disproved. The two probe panels that match the
+demo (bare + suspense, initialValues + suspense) sum to 2 on first load, and
+the sweep run above is the only extra-run mechanism found.
 
 ## Guardrail, kept
 
