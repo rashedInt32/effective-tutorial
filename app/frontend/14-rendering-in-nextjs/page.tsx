@@ -33,7 +33,8 @@ export default async function Lesson() {
       "initial-values",
       "suspense",
       "serializable",
-      "hydrate"
+      "hydrate",
+      "seed-and-refetch"
     ]),
     loadTodos()
   ])
@@ -144,12 +145,6 @@ export default async function Lesson() {
           keyed rather than listed.
         </p>
         <CodeFrame {...snip.hydrate} filename="page.tsx" lang="ts" />
-        <Callout label="Seeding is about the first render">
-          <Code>initialValues</Code> guarantees the value is there when the
-          registry is first read. It is not a promise that the atom&apos;s Effect
-          never runs — reach for <Code>Atom.withServerValue</Code> or a{" "}
-          <Code>timeToLive</Code> when you want to control that too.
-        </Callout>
         <Quote label="Which one to reach for">
           <Code>initialValues</Code> when you know the handful of atoms to seed —
           it is simpler and needs no schema. <Code>dehydrate</Code> /{" "}
@@ -163,6 +158,25 @@ export default async function Lesson() {
           <Code>encodeInitialAs</Code> to choose how pending atoms cross the
           wire.
         </ModuleNote>
+      </Section>
+
+      {/* Q5 — seeding vs refetching */}
+      <Section n="Q5" title="Does seeding stop the Effect from running?">
+        <p className="prose-text">
+          No. <Code>initialValues</Code> stores the seed as a <em>stale</em>{" "}
+          value: the first read shows it and still starts the Effect, whose
+          result then replaces it. That is stale-while-revalidate, and it is why
+          the seeded panel above never flashes a skeleton yet still fetches. To
+          seed <em>and</em> skip the fetch, seed from inside the tree with{" "}
+          <Code>useAtomInitialValues</Code>, which writes the value as valid.
+        </p>
+        <CodeFrame {...snip["seed-and-refetch"]} filename="Todos.tsx" lang="ts" />
+        <Callout label="Measured, not inferred">
+          Both wrong versions of this section typechecked and looked right in
+          the browser. The table above comes from counting Effect runs on a
+          production build, twice from a clean build. If you change how you seed,
+          count again.
+        </Callout>
       </Section>
 
       {/* Close */}
