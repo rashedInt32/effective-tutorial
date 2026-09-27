@@ -1,77 +1,59 @@
-# Open question: what does `initialValues` actually prevent?
+# Resolved: what `initialValues` actually prevents
 
-Picked up tomorrow. Nothing in the shipped site depends on the answer — Lesson 14
-was rewritten to claim only what was measured — but the question is real and the
-lesson could say more once it's settled.
+Settled 2026-09-27. Lesson 14 now has a Q5 section carrying the answer; the old
+"reach for `Atom.withServerValue`" callout was wrong and is gone.
 
-## What I observed
+## The answer
 
-While building Lesson 14 I added a module-level counter, incremented inside the
-atom's Effect, and rendered the total in the demo:
+`initialValues` prevents the **fallback**, not the **fetch**.
 
-```ts
-let clientRuns = 0
-const fetchTodos = Effect.flatMap(
-  Effect.sync(() => { clientRuns += 1 }),
-  () => Effect.delay(Effect.succeed([...]), "1200 millis")
-)
-```
+- `RegistryProvider initialValues` → `AtomRegistry` constructor →
+  `node.setInitialValue(value)`. That sets `NodeState.stale` (initialized +
+  waitingForValue) and `preserveInitialValueOnBuild = true`. The first `value()`
+  read still calls `atom.read`, which starts the Effect; the seed is kept as the
+  visible value until the Effect's result replaces it via `setSelf`.
+  Stale-while-revalidate, by design.
+- `useAtomInitialValues` (hook, `@effect/atom-react`) →
+  `registry.ensureNode(atom).setValue(value)`. That sets `NodeState.valid`, so
+  `value()` never builds and the Effect does not run until something
+  invalidates the atom.
+- `Hydration.hydrate` / `setSerializable` also lands in `setValue` for the
+  target atom, so a hydrated tree does not refetch either.
+- `Atom.withServerValue` / `withServerValueInitial` only change what
+  `useSyncExternalStore`'s `getServerSnapshot` returns. Unrelated to re-runs.
 
-The demo renders two `RegistryProvider`s over the **same** atom — one bare, one
-seeded with `initialValues={[[todosAtom, AsyncResult.success(serverTodos)]]}`.
+Source: `repos/effect/packages/effect/src/unstable/reactivity/AtomRegistry.ts`
+(`setInitialValue`, `setValue`, `NodeImpl.value`), `Atom.ts` (`makeEffect`,
+`withServerValue`), `node_modules/@effect/atom-react/dist/Hooks.js`.
 
-Measured against a production build (`pnpm build` + `pnpm start`, port 3100):
+## Why the counter read 3, not 2
 
-| moment | counter |
-|---|---|
-| after initial page load | 3 |
-| after one demo reset | 5 |
+Not reproduced as 3. A six-panel probe page, each panel its own atom and
+counter, gave the same numbers on two clean production builds:
 
-So it climbs by **2 per reset** — one per registry. The seeded registry runs its
-Effect too. And 3 on first load is one more than the two registries mounting,
-which I never accounted for.
+| panel | first load (hydration) | each reset |
+|---|---|---|
+| bare + `useAtomSuspense` | 1 | 1 |
+| bare + `useAtomValue` | **2** | 1 |
+| bare + `useAtomValue` + `Atom.keepAlive` | 1 | 1 |
+| `initialValues` + `useAtomSuspense` | 1 | 1 |
+| `useAtomInitialValues` + `useAtomSuspense` | **1** | 0 |
+| `useAtomInitialValues` + `Atom.keepAlive` | 0 | 0 |
 
-## The two claims this killed
+The extra first-load runs come from the registry's node sweep. `createNode`
+schedules `scheduleAtomRemoval` for any non-keepAlive atom. During hydration
+the node is created in render (`getServerSnapshot` → `registry.get`, or the
+hook's `ensureNode`) with no subscriber, the sweep fires before React's
+`useSyncExternalStore` subscribes after commit, and the subscribe rebuilds the
+node from scratch. `Atom.keepAlive` removes the run in both affected rows, which
+is what confirms the cause. The suspense path is not affected because the
+thrown promise keeps a subscription on the node.
 
-1. *"The server renders your loading state into the HTML."* False here. Next
-   awaits the Suspense boundary while prerendering, so the shipped HTML is
-   complete. Verified: `.next/server/app/frontend/14-rendering-in-nextjs.html`
-   contains the rows and **zero** occurrences of the fallback text.
-2. *"Seeding means the Effect never runs a second time."* False, per the counter
-   above.
+The original demo's shared counter probably picked up one such extra run; the
+two-panel configuration it used measures 2 on the probe.
 
-## What the lesson says now
+## Guardrail, kept
 
-Only the difference that reproduces every time: a seeded registry has its value
-on the first render and never falls back; a bare one shows its skeleton while
-loading. Confirmed by clicking reset and sampling the DOM at 150 ms — the bare
-panel reads `loading… (suspended)` while the seeded one already lists the rows.
-
-There's a callout stating plainly that seeding concerns the first render and is
-not a promise about when the Effect runs.
-
-## To investigate
-
-1. **Why does a seeded atom still run?** Read `AtomRegistry.make`'s
-   `initialValues` handling in
-   `repos/effect/packages/effect/src/unstable/reactivity/AtomRegistry.ts`, and
-   how `Atom.make(effect)` nodes decide to (re)compute on first subscribe. Is the
-   seeded value treated as an initial value that a subscription then refreshes
-   past?
-2. **Why 3 and not 2 on first load?** Candidates: the RSC payload causing a
-   second client render, a Suspense retry after hydration, or the counter being
-   incremented during the server pass and shipped in the bundle's module state.
-   Rule each out rather than guess.
-3. **Is there an API that does prevent the re-run?** Check
-   `Atom.withServerValue`, `withServerValueInitial`, `Atom.setIdleTTL`, and a
-   query's `timeToLive`. `withServerValueInitial` looked closest when skimming.
-4. **Then decide** whether Lesson 14 gains a short section on it, or whether the
-   current callout is already the honest ceiling. Do not add a claim that can't
-   be reproduced from a clean build twice.
-
-## Guardrail
-
-The reason this file exists is that both wrong claims typechecked, built, and
-looked convincing on screen. Only `pnpm build` plus a real browser caught them.
-Whatever the answer turns out to be, verify it against a production build, not a
-dev server and not the types.
+Both wrong claims typechecked, built, and looked right. Only `pnpm build` plus
+a real browser caught them. The Q5 callout says so, and any change to how the
+lesson seeds should be re-counted on a production build.
