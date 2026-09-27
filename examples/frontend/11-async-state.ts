@@ -7,6 +7,7 @@ import { Atom, AsyncResult } from "effect/unstable/reactivity";
 // `AsyncResult` that can only be in a state that actually exists.
 
 // #region atom
+// Give `Atom.make` an Effect instead of a value and you get back an
 // `Atom<AsyncResult<A, E>>`. The Effect runs when something first subscribes,
 // not when the module loads — same laziness as every Effect in the backend half.
 class Offline extends Data.TaggedError("Offline")<{ attempt: number }> {}

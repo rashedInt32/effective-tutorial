@@ -96,3 +96,31 @@ export const serializableTodos = Atom.make(fetchTodos).pipe(
 // for dehydrate/hydrate when a whole tree of atoms should cross the boundary at
 // once, keyed rather than enumerated.
 // #endregion hydrate
+
+// #region seed-and-refetch
+// Seeding is about the FIRST render. It is not a promise that the Effect never
+// runs. `initialValues` stores the seed as a STALE value: the first read shows
+// it and still starts the Effect, whose result then replaces it. That is
+// stale-while-revalidate, by design — the seeded panel above runs its Effect
+// once per mount, exactly like the bare one.
+//
+// To seed AND skip the fetch, seed from inside the tree. `useAtomInitialValues`
+// writes the value as VALID, so nothing runs until something invalidates it:
+//
+//   function Todos({ serverTodos }) {
+//     useAtomInitialValues([[todosAtom, AsyncResult.success(serverTodos)]])
+//     const { value } = useAtomSuspense(todosAtom)
+//     return <ul>{value.map(...)}</ul>
+//   }
+//
+// One catch, and only while hydrating: a node created during render has no
+// subscriber yet, and the registry drops unsubscribed nodes on its next tick.
+// React subscribes after commit, finds the node gone, rebuilds it — and that
+// rebuild runs the Effect once. `Atom.keepAlive` opts the atom out of the drop.
+export const todosAtomKeepAlive = Atom.keepAlive(todosAtom)
+
+// Measured on a production build, runs of the atom's Effect:
+//                      initialValues   useAtomInitialValues   …+ keepAlive
+//   first load (SSR)         1                  1                  0
+//   each remount             1                  0                  0
+// #endregion seed-and-refetch
